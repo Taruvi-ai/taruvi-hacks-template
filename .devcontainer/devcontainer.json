@@ -4,10 +4,10 @@
   "remoteEnv": {
     "CODEX_HOME": "${containerWorkspaceFolder}/.codex"
   },
-  "postCreateCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects; source /usr/local/share/nvm/nvm.sh; nvm install 22; nvm use 22; npm install; command -v codex >/dev/null 2>&1 || npm install -g @openai/codex'",
+  "postCreateCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects; source /usr/local/share/nvm/nvm.sh; nvm install 22; nvm use 22; npm install --legacy-peer-deps; command -v codex >/dev/null 2>&1 || npm install -g @openai/codex'",
   "postStartCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects'",
   "postAttachCommand": {
-    "app": "bash -lc 'source /usr/local/share/nvm/nvm.sh; nvm install 22; nvm use 22; [ -d node_modules ] || npm install; npm run dev -- --host 0.0.0.0 --port 5173'",
+    "app": "bash -lc 'source /usr/local/share/nvm/nvm.sh; nvm install 22; nvm use 22; [ -d node_modules ] || npm install --legacy-peer-deps; npm run dev -- --host 0.0.0.0 --port 5173'",
     "codex": "bash -lc 'source /usr/local/share/nvm/nvm.sh; nvm install 22; nvm use 22; command -v codex >/dev/null 2>&1 || npm install -g @openai/codex; [ -f .env ] || cp .env.example .env; while true; do set -a && source .env && set +a; MISSING_VARS=\"\"; for VAR_NAME in VITE_TARUVI_BASE_URL VITE_TARUVI_API_KEY VITE_TARUVI_APP_SLUG; do VAR_VALUE=$(printenv \"$VAR_NAME\"); if [ -z \"${VAR_VALUE//[[:space:]]/}\" ]; then MISSING_VARS=\"$MISSING_VARS $VAR_NAME\"; fi; done; if [ -z \"$MISSING_VARS\" ]; then break; fi; echo \"Missing required .env values:$MISSING_VARS\"; echo \"Populate .env, then press Enter to continue.\"; read -r; done; export TARUVI_AUTH_HEADER=\"Api-Key $VITE_TARUVI_API_KEY\"; bash scripts/setup-codex-config.sh; export CODEX_HOME=${CODEX_HOME:-$PWD/.codex}; mkdir -p \"$CODEX_HOME/projects\"; AUTH_PATH=project-code/.codex/auth.json; if [ ! -f \"$AUTH_PATH\" ]; then echo \"please copy auth.json to $AUTH_PATH and press Enter\"; read -r; fi; codex --sandbox danger-full-access'"
   },
   "forwardPorts": [5173],
