@@ -1,0 +1,27 @@
+{
+  "name": "taruvi-refine-template",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bullseye",
+  "remoteEnv": {
+    "CODEX_HOME": "${containerWorkspaceFolder}/.codex"
+  },
+  "postCreateCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects; source /usr/local/share/nvm/nvm.sh; nvm install 22; nvm use 22; npm install; command -v codex >/dev/null 2>&1 || npm install -g @openai/codex'",
+  "postStartCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects'",
+  "postAttachCommand": {
+    "app": "bash -lc 'source /usr/local/share/nvm/nvm.sh; nvm install 22; nvm use 22; [ -d node_modules ] || npm install; npm run dev -- --host 0.0.0.0 --port 5173'",
+    "codex": "bash -lc 'source /usr/local/share/nvm/nvm.sh; nvm install 22; nvm use 22; command -v codex >/dev/null 2>&1 || npm install -g @openai/codex; [ -f .env ] && set -a && source .env && set +a; export CODEX_HOME=${CODEX_HOME:-$PWD/.codex}; mkdir -p \"$CODEX_HOME/projects\"; AUTH_PATH=project-code/.codex/auth.json; if [ ! -f \"$AUTH_PATH\" ]; then echo \"please copy auth.json to $AUTH_PATH and press Enter\"; read -r; fi; codex'"
+  },
+  "forwardPorts": [5173],
+  "portsAttributes": {
+    "5173": {
+      "label": "Refine Dev Server",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}
