@@ -12,8 +12,18 @@ fi
 
 load_env_file() {
   while IFS= read -r line || [ -n "$line" ]; do
+    line="${line%$'\r'}"
+
     case "$line" in
       '' | [[:space:]]*'#'*)
+        continue
+        ;;
+    esac
+
+    case "$line" in
+      *=*)
+        ;;
+      *)
         continue
         ;;
     esac
@@ -24,7 +34,7 @@ load_env_file() {
     key="$(echo "$key" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
     value="$(echo "$value" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
 
-    if [ -n "$key" ]; then
+    if [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
       export "$key=$value"
     fi
   done < .env
@@ -46,8 +56,19 @@ while true; do
   fi
 
   echo "Missing required .env values:$MISSING_VARS"
-  echo "Populate .env, then press Enter to continue."
-  read -r
+  echo "Do you want to continue anyway without these values? [y/N]"
+  read -r continue_without_env
+
+  case "${continue_without_env:-}" in
+    [Yy] | [Yy][Ee][Ss])
+      echo "Continuing without all required env values."
+      break
+      ;;
+    *)
+      echo "Populate .env, then press Enter to retry."
+      read -r
+      ;;
+  esac
 done
 
 BASE_URL="${VITE_TARUVI_BASE_URL%/}"
