@@ -40,35 +40,65 @@ load_env_file() {
   done < .env
 }
 
-while true; do
-  load_env_file
+persist_env_var() {
+  local key="$1"
+  local value="$2"
+  local escaped_value
 
-  MISSING_VARS=""
-  for var_name in VITE_TARUVI_BASE_URL VITE_TARUVI_API_KEY VITE_TARUVI_APP_SLUG; do
-    var_value="${!var_name:-}"
-    if [ -z "${var_value//[[:space:]]/}" ]; then
-      MISSING_VARS="$MISSING_VARS $var_name"
+  escaped_value="$(printf '%s' "$value" | sed 's/[&|\\]/\\&/g')"
+
+  if grep -q "^${key}=" .env; then
+    sed -i.bak "s|^${key}=.*|${key}=${escaped_value}|" .env
+    rm -f .env.bak
+  else
+    printf '%s=%s\n' "$key" "$value" >> .env
+  fi
+}
+
+prompt_for_required_var() {
+  local key="$1"
+  local prompt="$2"
+  local input_value=""
+
+  while [ -z "${input_value//[[:space:]]/}" ]; do
+    echo "$prompt"
+    read -r input_value
+
+    if [ -z "${input_value//[[:space:]]/}" ]; then
+      echo "$key is required. Please enter a value."
     fi
   done
 
-  if [ -z "$MISSING_VARS" ]; then
+  persist_env_var "$key" "$input_value"
+  export "$key=$input_value"
+}
+
+while true; do
+  load_env_file
+
+  for var_name in VITE_TARUVI_BASE_URL VITE_TARUVI_API_KEY VITE_TARUVI_APP_SLUG; do
+    var_value="${!var_name:-}"
+    if [ -z "${var_value//[[:space:]]/}" ]; then
+      case "$var_name" in
+        VITE_TARUVI_BASE_URL)
+          prompt_for_required_var "$var_name" "Enter VITE_TARUVI_BASE_URL (e.g. https://your-tenant.example.com):"
+          ;;
+        VITE_TARUVI_API_KEY)
+          prompt_for_required_var "$var_name" "Enter VITE_TARUVI_API_KEY:"
+          ;;
+        VITE_TARUVI_APP_SLUG)
+          prompt_for_required_var "$var_name" "Enter VITE_TARUVI_APP_SLUG:"
+          ;;
+      esac
+    fi
+  done
+
+  load_env_file
+  if [ -n "${VITE_TARUVI_BASE_URL//[[:space:]]/}" ] \
+    && [ -n "${VITE_TARUVI_API_KEY//[[:space:]]/}" ] \
+    && [ -n "${VITE_TARUVI_APP_SLUG//[[:space:]]/}" ]; then
     break
   fi
-
-  echo "Missing required .env values:$MISSING_VARS"
-  echo "Do you want to continue anyway without these values? [y/N]"
-  read -r continue_without_env
-
-  case "${continue_without_env:-}" in
-    [Yy] | [Yy][Ee][Ss])
-      echo "Continuing without all required env values."
-      break
-      ;;
-    *)
-      echo "Populate .env, then press Enter to retry."
-      read -r
-      ;;
-  esac
 done
 
 BASE_URL="${VITE_TARUVI_BASE_URL%/}"
