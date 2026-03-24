@@ -87,10 +87,10 @@ export const AppSettingsProvider: React.FC<PropsWithChildren> = ({
     setError(null);
 
     try {
-      const appSlug = import.meta.env.VITE_TARUVI_APP_SLUG;
+      const appSlug = __TARUVI_APP_SLUG__;
 
       if (!appSlug) {
-        throw new Error("VITE_TARUVI_APP_SLUG is not defined");
+        throw new Error("TARUVI_APP_SLUG is not defined");
       }
 
       const response = await taruviClient.httpClient.get<AppSettingsAPIResponse>(

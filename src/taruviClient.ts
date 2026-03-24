@@ -2,9 +2,9 @@ import { Client } from "@taruvi/sdk";
 
 // Validate required environment variables
 const requiredEnvVars = {
-  VITE_TARUVI_BASE_URL: import.meta.env.VITE_TARUVI_BASE_URL,
-  VITE_TARUVI_API_KEY: import.meta.env.VITE_TARUVI_API_KEY,
-  VITE_TARUVI_APP_SLUG: import.meta.env.VITE_TARUVI_APP_SLUG,
+  TARUVI_SITE_URL: __TARUVI_SITE_URL__,
+  TARUVI_API_KEY: __TARUVI_API_KEY__,
+  TARUVI_APP_SLUG: __TARUVI_APP_SLUG__,
 };
 
 Object.entries(requiredEnvVars).forEach(([key, value]) => {
@@ -18,8 +18,8 @@ Object.entries(requiredEnvVars).forEach(([key, value]) => {
 
 /**
  * Taruvi Client instance configured with environment variables.
- * Participant-facing setup uses TARUVI_* variables, which are synced into
- * Vite-compatible VITE_TARUVI_* values by the setup scripts.
+ * Participant-facing setup uses TARUVI_* variables injected into the client
+ * build through Vite configuration.
  * Used for Navkit, DataProviders, and direct SDK operations.
  *
  * @example
@@ -36,9 +36,9 @@ Object.entries(requiredEnvVars).forEach(([key, value]) => {
 export const taruviClient = (() => {
   try {
     return new Client({
-      apiKey: import.meta.env.VITE_TARUVI_API_KEY,
-      appSlug: import.meta.env.VITE_TARUVI_APP_SLUG,
-      apiUrl: import.meta.env.VITE_TARUVI_BASE_URL,
+      apiKey: __TARUVI_API_KEY__,
+      appSlug: __TARUVI_APP_SLUG__,
+      apiUrl: __TARUVI_SITE_URL__,
     });
   } catch (error) {
     console.error("Failed to initialize Taruvi Client:", error);

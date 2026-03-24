@@ -1,9 +1,11 @@
 /// <reference types="vite/client" />
 
+declare const __TARUVI_SITE_URL__: string
+declare const __TARUVI_APP_SLUG__: string
+declare const __TARUVI_API_KEY__: string
+
 interface ImportMetaEnv {
-  readonly VITE_TARUVI_BASE_URL: string
-  readonly VITE_TARUVI_API_KEY: string
-  readonly VITE_TARUVI_APP_SLUG: string
+  readonly VITE_TARUVI_APP_TITLE: string
 }
 
 interface ImportMeta {

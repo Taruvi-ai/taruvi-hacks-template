@@ -38,7 +38,6 @@ When Codex starts in the devcontainer:
 - It verifies required Taruvi env vars are present.
 - If missing, it asks you to update `.env` with `TARUVI_SITE_URL`, `TARUVI_APP_SLUG`, and `TARUVI_API_KEY`.
 - It writes `.codex/config.toml` with resolved Taruvi values.
-- It syncs Vite-compatible `VITE_TARUVI_*` values automatically for the frontend.
 - It attempts to install the Codex VS Code extension.
 - It launches Codex after setup is complete.
 

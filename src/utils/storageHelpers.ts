@@ -6,8 +6,8 @@ import { taruviStorageProvider, type StorageUploadVariables } from "../providers
 export const getStorageUrl = (bucket: string, path: string | null | undefined): string => {
   if (!path) return "https://via.placeholder.com/400x600?text=No+Image";
 
-  const baseUrl = import.meta.env.VITE_TARUVI_BASE_URL;
-  const appSlug = import.meta.env.VITE_TARUVI_APP_SLUG;
+  const baseUrl = __TARUVI_SITE_URL__;
+  const appSlug = __TARUVI_APP_SLUG__;
 
   return `${baseUrl}/api/apps/${appSlug}/storage/buckets/${bucket}/objects/${path}`;
 };

@@ -47,21 +47,6 @@ function updateEnvFile(envValues) {
   );
 
   envContent = envContent.replace(
-    'VITE_TARUVI_BASE_URL=',
-    `VITE_TARUVI_BASE_URL=${envValues.baseUrl}`
-  );
-
-  envContent = envContent.replace(
-    'VITE_TARUVI_API_KEY=',
-    `VITE_TARUVI_API_KEY=${envValues.apiKey}`
-  );
-
-  envContent = envContent.replace(
-    'VITE_TARUVI_APP_SLUG=',
-    `VITE_TARUVI_APP_SLUG=${envValues.appSlug}`
-  );
-
-  envContent = envContent.replace(
     'VITE_TARUVI_APP_TITLE=CRM',
     `VITE_TARUVI_APP_TITLE=${envValues.appTitle}`
   );

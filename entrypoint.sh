@@ -10,10 +10,10 @@ if [ -f ".env" ]; then
   export $(grep -v '^\s*#' .env | grep -v '^\s*$' | xargs)
 fi
 
-TARUVI_SITE_URL="${TARUVI_SITE_URL:-${VITE_TARUVI_BASE_URL:-}}"
+TARUVI_SITE_URL="${TARUVI_SITE_URL:-}"
 TARUVI_SITE_URL="${TARUVI_SITE_URL%/}"
-TARUVI_APP_SLUG="${TARUVI_APP_SLUG:-${VITE_TARUVI_APP_SLUG:-}}"
-TARUVI_API_KEY="${TARUVI_API_KEY:-${VITE_TARUVI_API_KEY:-}}"
+TARUVI_APP_SLUG="${TARUVI_APP_SLUG:-}"
+TARUVI_API_KEY="${TARUVI_API_KEY:-}"
 
 # Setup Codex config with resolved env values
 export CODEX_HOME=/app/.codex
