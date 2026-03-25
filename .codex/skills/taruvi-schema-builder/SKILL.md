@@ -1,0 +1,52 @@
+---
+name: taruvi-schema-builder
+description: Turn plain-English product requirements into Taruvi database schemas and `create_update_schema` payloads. Use when Codex needs to design new Taruvi tables, define fields and relationships, propose enums and indexes, validate foreign key types, or map a data model into Refine resources for this Taruvi template.
+---
+
+# Taruvi Schema Builder
+
+Design Taruvi-ready database schemas from app ideas, then turn them into concrete `create_update_schema` payloads and first-pass resource plans.
+
+Use this skill when the user needs a data model for a new app, a new feature module, or a new resource set inside this Taruvi + Refine template.
+
+## Workflow
+
+1. Extract the core entities from the user's app idea.
+2. Identify the first version of the schema, not the perfect final version.
+3. Read `references/taruvi-schema-rules.md` before proposing field types or foreign keys.
+4. Produce:
+   - entities and their purpose
+   - fields with Taruvi-compatible types
+   - relationships and FK field types
+   - recommended enums and indexes
+   - a `create_update_schema` payload
+   - the first Refine resources to build
+5. Keep naming consistent across table names, FK names, and resource names.
+6. Treat a successful `create_update_schema` response as the primary success signal for new tables in this environment.
+
+## Defaults
+
+- Prefer one table per main concept.
+- Use `snake_case` for table and field names.
+- Use a simple MVP schema first, then suggest optional future fields separately.
+- Assume custom Taruvi tables use UUID primary keys.
+- Add timestamps and status fields when they help common app flows.
+- Suggest file path fields instead of direct file URLs when uploads are involved.
+
+## Output Shape
+
+When using this skill, structure the result in this order:
+
+1. `Schema Summary`
+2. `Entities`
+3. `Relationships`
+4. `Taruvi Payload`
+5. `First Resources`
+6. `Risks Or Open Questions`
+
+## Safety
+
+- Do not invent unsupported Taruvi schema features.
+- Call out FK type mismatches explicitly.
+- Separate must-have fields from nice-to-have fields so hackathon teams can ship quickly.
+- Do not rely on immediate `get_datatable_schema` or `datatable_data` readback for newly created app tables in this tenant; creation may succeed before those reads reflect the new table.
