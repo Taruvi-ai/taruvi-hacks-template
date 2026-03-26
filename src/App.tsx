@@ -16,7 +16,7 @@ import routerProvider, {
   DocumentTitleHandler,
   UnsavedChangesNotifier,
 } from "@refinedev/react-router";
-import { BrowserRouter, Outlet, Route, Routes } from "react-router";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router";
 import { taruviClient } from "./taruviClient";
 import {
   taruviDataProvider,
@@ -32,18 +32,85 @@ import { CustomSider } from "./components/sidenav";
 import { LoginRedirect } from "./components/auth/LoginRedirect";
 import { ColorModeContextProvider, ColorModeContext } from "./contexts/color-mode";
 import { AppSettingsProvider } from "./contexts/app-settings";
-import { useContext, useRef, useEffect } from "react";
+import { useContext, useRef, useEffect, useState } from "react";
 import { Home } from "./pages/home";
+import AssignmentOutlined from "@mui/icons-material/AssignmentOutlined";
+import GroupsOutlined from "@mui/icons-material/GroupsOutlined";
+import {
+  AssignmentList,
+  AssignmentCreate,
+  AssignmentEdit,
+  AssignmentShow,
+} from "./pages/assignments";
+import {
+  AssignmentGroupList,
+  AssignmentGroupCreate,
+  AssignmentGroupEdit,
+  AssignmentGroupShow,
+} from "./pages/assignment-groups";
+import type { TaruviUser } from "./providers/refineProviders";
+import { canManageAssignments } from "./features/assignments/access";
 
 const AppContent = () => {
   const { setMode } = useContext(ColorModeContext);
   const navRef = useRef<HTMLDivElement>(null);
+  const [identity, setIdentity] = useState<TaruviUser | null>(null);
+  const canAdmin = canManageAssignments(identity);
+
+  const resources = [
+    {
+      name: "assignments",
+      list: "/assignments",
+      ...(canAdmin ? { create: "/assignments/create", edit: "/assignments/edit/:id" } : {}),
+      show: "/assignments/show/:id",
+      meta: {
+        label: "Assignments",
+        icon: <AssignmentOutlined />,
+      },
+    },
+    ...(canAdmin
+      ? [
+          {
+            name: "assignment_groups",
+            list: "/assignment-groups",
+            create: "/assignment-groups/create",
+            edit: "/assignment-groups/edit/:id",
+            show: "/assignment-groups/show/:id",
+            meta: {
+              label: "Assignment Groups",
+              icon: <GroupsOutlined />,
+            },
+          },
+        ]
+      : []),
+  ];
 
   useEffect(() => {
     if (navRef.current) {
       const height = navRef.current.offsetHeight;
       document.documentElement.style.setProperty('--nav-height', `${height}px`);
     }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    taruviAuthProvider
+      .getIdentity?.()
+      .then((user) => {
+        if (!cancelled) {
+          setIdentity((user as TaruviUser | null) ?? null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIdentity(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -78,9 +145,7 @@ const AppContent = () => {
                 routerProvider={routerProvider}
                 authProvider={taruviAuthProvider}
                 // accessControlProvider={taruviAccessControlProvider} // Uncomment to enable Cerbos-based access control
-                resources={[
-                  // Add your resources here
-                ]}
+                resources={resources}
                 options={{
                   syncWithLocation: true,
                   warnWhenUnsavedChanges: true,
@@ -102,8 +167,34 @@ const AppContent = () => {
                       </Authenticated>
                     }
                   >
-                    <Route index element={<Home />} />
-                    <Route path="*" element={<ErrorComponent />} />
+                    <Route index element={canAdmin ? <Home /> : <Navigate to="/assignments" replace />} />
+                    <Route path="assignments" element={<AssignmentList />} />
+                    <Route
+                      path="assignments/create"
+                      element={canAdmin ? <AssignmentCreate /> : <Navigate to="/assignments" replace />}
+                    />
+                    <Route
+                      path="assignments/edit/:id"
+                      element={canAdmin ? <AssignmentEdit /> : <Navigate to="/assignments" replace />}
+                    />
+                    <Route path="assignments/show/:id" element={<AssignmentShow />} />
+                    <Route
+                      path="assignment-groups"
+                      element={canAdmin ? <AssignmentGroupList /> : <Navigate to="/assignments" replace />}
+                    />
+                    <Route
+                      path="assignment-groups/create"
+                      element={canAdmin ? <AssignmentGroupCreate /> : <Navigate to="/assignments" replace />}
+                    />
+                    <Route
+                      path="assignment-groups/edit/:id"
+                      element={canAdmin ? <AssignmentGroupEdit /> : <Navigate to="/assignments" replace />}
+                    />
+                    <Route
+                      path="assignment-groups/show/:id"
+                      element={canAdmin ? <AssignmentGroupShow /> : <Navigate to="/assignments" replace />}
+                    />
+                    <Route path="*" element={canAdmin ? <ErrorComponent /> : <Navigate to="/assignments" replace />} />
                   </Route>
                 </Routes>
 

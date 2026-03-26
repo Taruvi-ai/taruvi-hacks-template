@@ -13,6 +13,34 @@ export const getStorageUrl = (bucket: string, path: string | null | undefined): 
 };
 
 /**
+ * Download a storage object with a browser save prompt instead of navigating to the file URL.
+ */
+export const downloadStorageFile = async (
+  bucket: string,
+  path: string,
+  fileName?: string | null,
+): Promise<void> => {
+  const url = getStorageUrl(bucket, path);
+  const response = await fetch(url, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to download file: ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  const objectUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = fileName || path.split("/").pop() || "download";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(objectUrl);
+};
+
+/**
  * Convenience wrapper for play posters
  */
 export const getPosterUrl = (posterPath: string | null | undefined): string => {
