@@ -9,20 +9,42 @@ Design Taruvi-ready database schemas from app ideas, then turn them into concret
 
 Use this skill when the user needs a data model for a new app, a new feature module, or a new resource set inside this Taruvi + Refine template.
 
+Taruvi schema changes are expressed as a Frictionless Data Package payload passed to `create_update_schema`, so always think in terms of:
+
+```json
+{
+  "datapackage": {
+    "resources": [
+      {
+        "name": "table_name",
+        "schema": {
+          "fields": [],
+          "primaryKey": "id"
+        }
+      }
+    ]
+  }
+}
+```
+
 ## Workflow
 
 1. Extract the core entities from the user's app idea.
 2. Identify the first version of the schema, not the perfect final version.
 3. Read `references/taruvi-schema-rules.md` before proposing field types or foreign keys.
+4. Model the schema as a Frictionless datapackage resource, not as an ad hoc JSON object.
+5. When relevant, account for search, relationships, hierarchy, graph traversal, imports, and schema evolution.
+6. Use the Taruvi Data Service docs family as guidance for behavior around CRUD, querying, aggregations, relationships, hierarchy, graph traversal, imports, and migrations.
 4. Produce:
    - entities and their purpose
    - fields with Taruvi-compatible types
    - relationships and FK field types
    - recommended enums and indexes
+   - search configuration when the app needs keyword search
+   - hierarchy/graph configuration when the app needs tree or graph traversal
    - a `create_update_schema` payload
    - the first Refine resources to build
-5. Keep naming consistent across table names, FK names, and resource names.
-6. Treat a successful `create_update_schema` response as the primary success signal for new tables in this environment.
+7. Keep naming consistent across table names, FK names, and resource names.
 
 ## Defaults
 
@@ -32,6 +54,7 @@ Use this skill when the user needs a data model for a new app, a new feature mod
 - Assume custom Taruvi tables use UUID primary keys.
 - Add timestamps and status fields when they help common app flows.
 - Suggest file path fields instead of direct file URLs when uploads are involved.
+- Add search/index guidance for fields that will be filtered, sorted, grouped, or searched frequently.
 
 ## Output Shape
 
@@ -49,4 +72,3 @@ When using this skill, structure the result in this order:
 - Do not invent unsupported Taruvi schema features.
 - Call out FK type mismatches explicitly.
 - Separate must-have fields from nice-to-have fields so hackathon teams can ship quickly.
-- Do not rely on immediate `get_datatable_schema` or `datatable_data` readback for newly created app tables in this tenant; creation may succeed before those reads reflect the new table.
