@@ -25,24 +25,27 @@ export const deleteAssignmentCascade = async (params: {
   await cleanupAttachmentFiles(attachments);
 
   if (attachments.length > 0) {
-    await taruviDataProvider.deleteMany({
-      resource: "assignment_attachments",
-      ids: attachments.map((attachment) => attachment.id),
-    });
+    await Promise.all(
+      attachments.map((attachment) =>
+        taruviDataProvider.deleteOne({ resource: "assignment_attachments", id: attachment.id }),
+      ),
+    );
   }
 
   if (assignees.length > 0) {
-    await taruviDataProvider.deleteMany({
-      resource: "assignment_assignees",
-      ids: assignees.map((assignee) => assignee.id),
-    });
+    await Promise.all(
+      assignees.map((assignee) =>
+        taruviDataProvider.deleteOne({ resource: "assignment_assignees", id: assignee.id }),
+      ),
+    );
   }
 
   if (steps.length > 0) {
-    await taruviDataProvider.deleteMany({
-      resource: "assignment_steps",
-      ids: steps.map((step) => step.id),
-    });
+    await Promise.all(
+      steps.map((step) =>
+        taruviDataProvider.deleteOne({ resource: "assignment_steps", id: step.id }),
+      ),
+    );
   }
 
   await taruviDataProvider.deleteOne({

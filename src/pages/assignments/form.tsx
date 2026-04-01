@@ -313,10 +313,11 @@ export const AssignmentForm = ({ mode }: AssignmentFormProps) => {
       }
 
       if (existingAssignees.length > 0) {
-        await taruviDataProvider.deleteMany({
-          resource: "assignment_assignees",
-          ids: existingAssignees.map((assignee) => assignee.id),
-        });
+        await Promise.all(
+          existingAssignees.map((assignee) =>
+            taruviDataProvider.deleteOne({ resource: "assignment_assignees", id: assignee.id }),
+          ),
+        );
       }
 
       const keptExistingAttachmentIds = new Set(referenceAttachments.map((attachment) => attachment.id).filter(Boolean));
@@ -324,10 +325,11 @@ export const AssignmentForm = ({ mode }: AssignmentFormProps) => {
 
       if (attachmentsToDelete.length > 0) {
         await cleanupAttachmentFiles(attachmentsToDelete);
-        await taruviDataProvider.deleteMany({
-          resource: "assignment_attachments",
-          ids: attachmentsToDelete.map((attachment) => attachment.id),
-        });
+        await Promise.all(
+          attachmentsToDelete.map((attachment) =>
+            taruviDataProvider.deleteOne({ resource: "assignment_attachments", id: attachment.id }),
+          ),
+        );
       }
 
       const stepIdMap = new Map<string, string>();

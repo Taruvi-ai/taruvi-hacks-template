@@ -132,23 +132,33 @@ export const AssignmentGroupForm = ({ mode }: AssignmentGroupFormProps) => {
       }
 
       if (memberRecords.length > 0) {
-        await taruviDataProvider.deleteMany({
-          resource: "assignment_group_members",
-          ids: memberRecords.map((member) => member.id),
-        });
+        await Promise.all(
+          memberRecords.map((member) =>
+            taruviDataProvider.deleteOne({
+              resource: "assignment_group_members",
+              id: member.id,
+            }).catch((deleteError) => {
+              console.warn("Failed to delete member", member.id, deleteError);
+            }),
+          ),
+        );
       }
 
       if (selectedUsers.length > 0) {
-        await taruviDataProvider.createMany({
-          resource: "assignment_group_members",
-          variables: selectedUsers.map((user) => ({
-            id: crypto.randomUUID(),
-            group_id: groupId,
-            user_id: user.id,
-            member_role: leadUserId === user.id ? "lead" : "member",
-            created_at: now,
-          })),
-        });
+        await Promise.all(
+          selectedUsers.map((user) =>
+            taruviDataProvider.create({
+              resource: "assignment_group_members",
+              variables: {
+                id: crypto.randomUUID(),
+                group_id: groupId,
+                user_id: user.id,
+                member_role: leadUserId === user.id ? "lead" : "member",
+                created_at: now,
+              },
+            }),
+          ),
+        );
       }
 
       if (open) {

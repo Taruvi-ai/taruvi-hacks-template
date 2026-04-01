@@ -29,10 +29,12 @@ import type { TaruviUser } from "../../providers/refineProviders";
 import { taruviDataProvider } from "../../providers/refineProviders";
 import { downloadStorageFile, uploadFile } from "../../utils/storageHelpers";
 import { FormattedText } from "../../components/text/FormattedText";
+import { MarkdownText } from "../../components/text/MarkdownText";
 import type {
   Assignment,
   AssignmentAssignee,
   AssignmentAttachment,
+  AssignmentGroupMember,
   AssignmentStepResponse,
   AssignmentStep,
 } from "../../features/assignments/types";
@@ -84,6 +86,11 @@ export const AssignmentShow = () => {
     pagination: { mode: "off" },
     sorters: [{ field: "updated_at", order: "desc" }],
   });
+  const groupMembersQuery = useList<AssignmentGroupMember>({
+    resource: "assignment_group_members",
+    pagination: { mode: "off" },
+    queryOptions: { enabled: !canAdmin },
+  });
   const usersQuery = useList<{ id: number; username: string; full_name?: string }>({
     resource: "users",
     dataProviderName: "user",
@@ -100,7 +107,26 @@ export const AssignmentShow = () => {
   const assignees = assigneesQuery.result?.data ?? [];
   const attachments = attachmentsQuery.result?.data ?? [];
   const responses = responsesQuery.result?.data ?? [];
+  const groupMembers = groupMembersQuery.result?.data ?? [];
   const users = usersQuery.result?.data ?? [];
+
+  // Check if the current user is assigned to this assignment (directly or via group)
+  const isAssigned = useMemo(() => {
+    if (canAdmin) return true;
+    if (!identity?.id) return false;
+
+    const myGroupIds = new Set(
+      groupMembers
+        .filter((gm) => gm.user_id === identity.id)
+        .map((gm) => gm.group_id),
+    );
+
+    return assignees.some(
+      (a) =>
+        (a.assignee_type === "user" && a.user_id === identity.id) ||
+        (a.assignee_type === "group" && a.group_id && myGroupIds.has(a.group_id)),
+    );
+  }, [assignees, groupMembers, identity?.id, canAdmin]);
 
   useEffect(() => {
     if (steps.length === 0) {
@@ -202,7 +228,8 @@ export const AssignmentShow = () => {
       stepsQuery.query?.isLoading ||
       assigneesQuery.query?.isLoading ||
       attachmentsQuery.query?.isLoading ||
-      responsesQuery.query?.isLoading,
+      responsesQuery.query?.isLoading ||
+      (!canAdmin && groupMembersQuery.query?.isLoading),
   );
 
   const currentStepAttachments = currentStep ? stepAttachments.get(currentStep.id) ?? [] : [];
@@ -219,10 +246,10 @@ export const AssignmentShow = () => {
   useEffect(() => {
     if (loading) return;
     if (assignmentQuery.result == null) return;
-    if (isHiddenDraft) {
+    if (isHiddenDraft || !isAssigned) {
       navigate("/assignments", { replace: true });
     }
-  }, [assignmentQuery.result, isHiddenDraft, loading, navigate]);
+  }, [assignmentQuery.result, isHiddenDraft, isAssigned, loading, navigate]);
 
   const handleSaveResponse = async () => {
     if (!currentStep || !identity?.id) return;
@@ -317,14 +344,14 @@ export const AssignmentShow = () => {
                       <Typography variant="h4" fontWeight={700}>
                         {assignmentQuery.result.title}
                       </Typography>
-                      <FormattedText color="text.secondary" text={assignmentQuery.result.summary || "No summary provided."} />
+                      <MarkdownText color="text.secondary" text={assignmentQuery.result.summary || "No summary provided."} />
                     </Box>
                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                       <Chip label={assignmentQuery.result.status} color={assignmentQuery.result.status === "published" ? "success" : "default"} />
                       <Chip label={assignmentQuery.result.priority} variant="outlined" />
                     </Stack>
                   </Stack>
-                  <FormattedText text={assignmentQuery.result.instructions || "No additional instructions."} />
+                  <MarkdownText text={assignmentQuery.result.instructions || "No additional instructions."} />
                   <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                     <Chip label={`Due ${formatDateTime(assignmentQuery.result.due_at)}`} variant="outlined" />
                     <Chip label={`${steps.length} steps`} variant="outlined" />
@@ -412,7 +439,7 @@ export const AssignmentShow = () => {
                             <Typography variant="h5" fontWeight={700} gutterBottom>
                               {currentStep.title}
                             </Typography>
-                            <FormattedText color="text.secondary" text={currentStep.description || "No extra description."} />
+                            <MarkdownText color="text.secondary" text={currentStep.description || "No extra description."} />
                           </Box>
 
                           {currentStepReferenceFiles.length > 0 || currentStep.allow_user_uploads || currentStep.require_message_response ? (

@@ -1,0 +1,51 @@
+external_projects:
+  taruvi-desk:
+    repository: Taruvi-ai/taruvi-desk
+    branch: refine/desk
+    root_directory: .
+    build_directory: dist
+    custom_domain: desk.taruvi.space
+    project_type: pages
+    environment: production
+    infisical_project_slug: cloudflare-pages-g-rij
+    infisical_env_slug: taruvi-desk
+  grainix:
+    repository: eoxvantage-com/eox-erp
+    branch: prod
+    root_directory: .
+    build_directory: dist
+    custom_domain: ''
+    project_type: pages
+    environment: production
+    infisical_project_slug: cloudflare-pages-g-rij
+    infisical_env_slug: grainix
+  grainix-test:
+    repository: eoxvantage-com/eox-erp
+    branch: qa
+    root_directory: .
+    build_directory: dist
+    custom_domain: ''
+    project_type: pages
+    environment: test
+    infisical_project_slug: cloudflare-pages-g-rij
+    infisical_env_slug: grainix-test
+  scopeengine-test:
+    repository: eoxvantage-com/ScopeEngine
+    branch: qa
+    root_directory: .
+    build_directory: dist
+    custom_domain: ''
+    project_type: pages
+    environment: test
+    infisical_project_slug: cloudflare-pages-g-rij
+    infisical_env_slug: scopeengine-test
+  hubdriveonlinetest:
+    repository: eoxvantage-com/HDO-Migration
+    branch: qa
+    root_directory: .
+    build_directory: dist
+    custom_domain: ''
+    project_type: pages
+    environment: test
+    infisical_project_slug: cloudflare-pages-g-rij
+    infisical_env_slug: hdotest

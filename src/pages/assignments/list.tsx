@@ -18,7 +18,7 @@ import AssignmentOutlined from "@mui/icons-material/AssignmentOutlined";
 import AddOutlined from "@mui/icons-material/AddOutlined";
 import ArrowForwardOutlined from "@mui/icons-material/ArrowForwardOutlined";
 import type { TaruviUser } from "../../providers/refineProviders";
-import type { Assignment, AssignmentAssignee, AssignmentStep } from "../../features/assignments/types";
+import type { Assignment, AssignmentAssignee, AssignmentGroupMember, AssignmentStep } from "../../features/assignments/types";
 import { formatDateTime } from "../../features/assignments/utils";
 import { canManageAssignments } from "../../features/assignments/access";
 
@@ -41,10 +41,40 @@ export const AssignmentList = () => {
     resource: "assignment_assignees",
     pagination: { mode: "off" },
   });
+  const groupMembersQuery = useList<AssignmentGroupMember>({
+    resource: "assignment_group_members",
+    pagination: { mode: "off" },
+    queryOptions: { enabled: !canAdmin },
+  });
 
-  const assignments = assignmentsQuery.result?.data ?? [];
+  const allAssignments = assignmentsQuery.result?.data ?? [];
   const steps = stepsQuery.result?.data ?? [];
   const assignees = assigneesQuery.result?.data ?? [];
+  const groupMembers = groupMembersQuery.result?.data ?? [];
+
+  // Non-admins only see assignments they are assigned to (directly or via group)
+  const assignments = useMemo(() => {
+    if (canAdmin) return allAssignments;
+    if (!identity?.id) return [];
+
+    const myGroupIds = new Set(
+      groupMembers
+        .filter((gm) => gm.user_id === identity.id)
+        .map((gm) => gm.group_id),
+    );
+
+    const myAssignmentIds = new Set(
+      assignees
+        .filter(
+          (a) =>
+            (a.assignee_type === "user" && a.user_id === identity.id) ||
+            (a.assignee_type === "group" && a.group_id && myGroupIds.has(a.group_id)),
+        )
+        .map((a) => a.assignment_id),
+    );
+
+    return allAssignments.filter((a) => myAssignmentIds.has(a.id));
+  }, [allAssignments, assignees, groupMembers, identity?.id, canAdmin]);
 
   const stepCountByAssignment = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -62,7 +92,7 @@ export const AssignmentList = () => {
     return counts;
   }, [assignees]);
 
-  const loading = Boolean(assignmentsQuery.query?.isLoading || stepsQuery.query?.isLoading || assigneesQuery.query?.isLoading);
+  const loading = Boolean(assignmentsQuery.query?.isLoading || stepsQuery.query?.isLoading || assigneesQuery.query?.isLoading || (!canAdmin && groupMembersQuery.query?.isLoading));
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
