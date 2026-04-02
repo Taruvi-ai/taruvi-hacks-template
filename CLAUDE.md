@@ -21,6 +21,23 @@ When making dashboards or building anything that uses Taruvi, use the `taruvi-pa
 - Use that skill's `REFERENCE.md` as the source of truth for Taruvi usage
 - Do not answer Taruvi usage questions from memory or invent generic REST endpoints
 
+## Mandatory Taruvi Preflight
+
+For any task involving Taruvi, Refine + Taruvi, `@taruvi/sdk`, or `@taruvi/refine-providers`:
+
+1. You MUST open and read `.codex/skills/taruvi-packages-usage/SKILL.md`
+2. You MUST open and read `.codex/skills/taruvi-packages-usage/REFERENCE.md`
+3. Before making edits, state in a commentary update that you read them
+4. In the final response, cite the specific Taruvi reference section used
+
+Do not implement from memory.
+Do not treat prior knowledge as sufficient.
+If these files are unavailable, stop and say so.
+
+Every Taruvi-related change must include:
+- a short note in `docs/` naming the Taruvi reference sections consulted
+- at least one file/path citation to the reference in the final response
+
 ## Project Overview
 
 This is a **Refine.dev v5** project - a React-based framework for building admin panels, dashboards, and internal tools. Refine provides a collection of hooks and components that abstract CRUD operations and integrate with various backend services.
