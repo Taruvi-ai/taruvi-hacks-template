@@ -19,15 +19,16 @@
   },
   "customizations": {
     "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
+      ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
         "github.copilot.enable": {
-          "*": false,
-          "plaintext": false,
-          "markdown": false,
-          "scminput": false
+          "*": true
         },
-        "github.copilot.editor.enableAutoCompletions": false
+        "github.copilot.editor.enableAutoCompletions": true
       }
     }
   }

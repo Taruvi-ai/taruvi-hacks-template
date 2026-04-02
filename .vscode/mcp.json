@@ -1,0 +1,16 @@
+{
+  "servers": {
+    "taruvi": {
+      "type": "http",
+      "url": "${env:TARUVI_SITE_URL}/mcp/",
+      "headers": {
+        "Authorization": "Api-Key ${env:TARUVI_API_KEY}",
+        "X-App-Slug": "${env:TARUVI_APP_SLUG}"
+      }
+    },
+    "context7": {
+            "command": "npx",
+            "args": ["-y", "@upstash/context7-mcp", "--api-key", "ctx7sk-b07da0a5-b392-4e88-8b99-095b7190feea"]
+    }
+  }
+}

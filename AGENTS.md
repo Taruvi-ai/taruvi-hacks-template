@@ -44,6 +44,8 @@ This is a **Refine.dev v5** project - a React-based framework for building admin
 
 **CRITICAL:** This project uses **Refine v5** which has significantly different hook syntax from v4. Always use the v5 patterns documented in the "[IMPORTANT: Refine v5 Syntax Changes](#important-refine-v5-syntax-changes)" section below.
 
+IMPORTANT: Always use Context7 MCP Skill when I need library/API, Refine v5, MUI documentation without me having to explicitly ask.
+
 **When confused or need clarification:** Use the Task tool with `subagent_type='Explore'` and set thoroughness to "medium" or "very thorough" to understand the codebase patterns before making changes.
 
 ## Pre-Work Checklist
@@ -60,9 +62,11 @@ This is a **Refine.dev v5** project - a React-based framework for building admin
 - Do not create custom notification systems, ad hoc snackbars, or alternate toast providers when implementing feedback
 - When adding success/error feedback, wire it through the existing notification provider already configured in `/src/App.tsx`
 
-## Data Providers
+## IMPORTANT : Data Providers
 
 All providers are in `/src/providers/refineProviders.ts` (package: `@taruvi/refine-providers`) and registered in `/src/App.tsx`.
+
+Read the taruvi-packages-usage skill for detailed usage patterns, supported operations, and examples to use the provider and their capabilities.
 
 **Available Providers:**
 
