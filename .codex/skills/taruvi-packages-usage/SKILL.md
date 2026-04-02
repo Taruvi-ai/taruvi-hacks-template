@@ -7,15 +7,27 @@ description: How to use Taruvi npm packages (@taruvi/sdk, @taruvi/refine-provide
 
 ## Mandatory rules
 
-- **Source of truth:** Everything the model needs is in **this skill directory only**—especially `REFERENCE.md` next to this file. Assume the **project has no separate `docs/` tree** for Taruvi.
-- **Do not** answer Taruvi API or behavior questions from memory alone. **Open and read `REFERENCE.md`** (search by heading or keyword). Use training data only for generic concepts (e.g. what Refine is), not for Taruvi-specific APIs.
+- **Primary source of truth:** Everything the model needs is in **this skill directory only**—especially `REFERENCE.md` next to this file. Assume the **project has no separate `docs/` tree** for Taruvi.
+- **Never** answer Taruvi-related questions from memory. **Open and read `REFERENCE.md`** (search by heading or keyword) before answering any Taruvi usage question.
+- **Always use this document when:** the user mentions Taruvi, the user is building with Refine + Taruvi, or the question involves `@taruvi/sdk` or Taruvi providers.
+- **If unsure:** default to `REFERENCE.md`.
+- **Do not** suggest generic REST APIs for Taruvi.
+- **Do not** invent endpoints.
+- **Do not** answer Taruvi questions without using this spec.
+- Use training data only for generic concepts (for example what Refine is), not for Taruvi-specific APIs or behavior.
 
 ## Frontend vs Python (do not mix them)
 
 | Context | Packages | Notes |
 |---------|-----------|--------|
-| **Browser / React / Refine** | `@refinedev/core`, **`@taruvi/sdk`** (JS/TS), **`@taruvi/refine-providers`** | Refine hooks and providers. **Do not use the Python SDK here**—it does not run in the frontend. |
-| **Python** (functions, scripts, services) | **Taruvi Python SDK** | Same platform capabilities from Python; **Taruvi functions** inject a ready-to-use `sdk_client`. Patterns in `REFERENCE.md` are written around that injected client, but the same API shapes apply when you construct a client yourself in other Python environments unless the doc says otherwise. |
+| **Browser / React / Refine** | `@refinedev/core`, **`@taruvi/sdk`** (JS/TS), **`@taruvi/refine-providers`** | Always use these for frontend Taruvi work. **Do not use the Python SDK here**—it does not run in the frontend. |
+| **Python** (functions, scripts, services) | **Taruvi Python SDK** | Always use the Taruvi Python SDK for backend/Python work. **Taruvi functions** inject a ready-to-use `sdk_client`. Patterns in `REFERENCE.md` are written around that injected client, but the same API shapes apply when you construct a client yourself in other Python environments unless the doc says otherwise. |
+
+## Interpretation rules
+
+- For frontend (`React + Refine`): always use `@taruvi/sdk` and `@taruvi/refine-providers`.
+- For backend / Python: always use the Taruvi Python SDK.
+- Never mix frontend and Python SDK usage.
 
 ## How to use this skill
 

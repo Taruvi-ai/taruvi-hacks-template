@@ -13,6 +13,14 @@ A functional MVP in this repo means:
 
 If the user wants a UI-only prototype, they must explicitly say so.
 
+## Taruvi Skill Requirement
+
+When making dashboards or building anything that uses Taruvi, use the `taruvi-packages-usage` skill.
+
+- This applies whenever the task mentions Taruvi, Refine + Taruvi, `@taruvi/sdk`, or `@taruvi/refine-providers`
+- Use that skill's `REFERENCE.md` as the source of truth for Taruvi usage
+- Do not answer Taruvi usage questions from memory or invent generic REST endpoints
+
 ## Project Overview
 
 This is a **Refine.dev v5** project - a React-based framework for building admin panels, dashboards, and internal tools. Refine provides a collection of hooks and components that abstract CRUD operations and integrate with various backend services.
