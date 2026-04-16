@@ -11,6 +11,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Logout from "@mui/icons-material/Logout";
 import ListOutlined from "@mui/icons-material/ListOutlined";
 import { useTranslate, type TreeMenuItem, CanAccess } from "@refinedev/core";
+import { getAclResource } from "../../utils/aclResource";
 
 interface MobileBottomNavProps {
   menuItems: TreeMenuItem[];
@@ -95,7 +96,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             return (
               <CanAccess
                 key={item.key || item.name}
-                resource={item.name}
+                resource={getAclResource(item)}
                 action="list"
                 params={{ resource: item }}
               >
@@ -138,7 +139,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         {moreItems.map((item) => (
           <CanAccess
             key={item.key || item.name}
-            resource={item.name}
+            resource={getAclResource(item)}
             action="list"
             params={{ resource: item }}
           >

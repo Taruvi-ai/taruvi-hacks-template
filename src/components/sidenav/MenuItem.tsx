@@ -8,6 +8,7 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import ListOutlined from "@mui/icons-material/ListOutlined";
 import { CanAccess, type TreeMenuItem } from "@refinedev/core";
+import { getAclResource } from "../../utils/aclResource";
 
 const MAX_LABEL_EXPANDED = 40;
 const MAX_LABEL_COLLAPSED = 10;
@@ -102,7 +103,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   return (
     <CanAccess
-      resource={item.name}
+      resource={getAclResource(item)}
       action="list"
       params={{ resource: item }}
     >
