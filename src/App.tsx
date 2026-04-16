@@ -25,7 +25,7 @@ import {
   taruviAnalyticsProvider,
   // taruviAccessControlProvider, // Uncomment to enable Cerbos-based access control
 } from "./providers/refineProviders";
-import { CustomSider, UnsavedChangesDialog } from "./components";
+import { ConsoleLogDrawer, CustomSider, UnsavedChangesDialog } from "./components";
 import { LoginRedirect } from "./components/auth/LoginRedirect";
 import { ColorModeContextProvider, ColorModeContext } from "./contexts/color-mode";
 import {AppSettingsProvider, useAppSettings} from "./contexts/app-settings";
@@ -96,6 +96,7 @@ const AppContent = () => {
                           <Box sx={{ ml: { xs: 0, md: '72px' }, transition: 'margin-left 0.2s ease-in-out' }}>
                             <Outlet />
                           </Box>
+                          <ConsoleLogDrawer />
                         </ThemedLayout>
                       </Authenticated>
                     }
