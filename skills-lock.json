@@ -96,6 +96,31 @@
       "sourceType": "github",
       "computedHash": "6066e73875e4770e624641355cc04662ce75d2b1d1a3673e24dcbd0ec8936297"
     },
+    "taruvi-app-developer": {
+      "source": "Taruvi-ai/taruvi-skills",
+      "sourceType": "github",
+      "computedHash": "d52add8542053ddcec15e5f83692d9544c4f8b821b97c92559912ed682b6a0ed"
+    },
+    "taruvi-database": {
+      "source": "Taruvi-ai/taruvi-skills",
+      "sourceType": "github",
+      "computedHash": "23835cc270d013677518fb5edd1a1da57e199550dcf125e3ebabc7c2a29d820b"
+    },
+    "taruvi-functions": {
+      "source": "Taruvi-ai/taruvi-skills",
+      "sourceType": "github",
+      "computedHash": "2c6ff95723a0929f1d2881b63598aca4380d7727e347b30ff04793570d38b869"
+    },
+    "taruvi-refine-providers": {
+      "source": "Taruvi-ai/taruvi-skills",
+      "sourceType": "github",
+      "computedHash": "4bba1e896684c6504eac98a4b6c461185cf3d3ebe13e6a3187e638d9611f2248"
+    },
+    "taruvi-storage": {
+      "source": "Taruvi-ai/taruvi-skills",
+      "sourceType": "github",
+      "computedHash": "75315b61418f732d3156924fc2f726e04ec8dfdde75fb5b94cdde71f7747a142"
+    },
     "teach-impeccable": {
       "source": "pbakaus/impeccable",
       "sourceType": "github",
