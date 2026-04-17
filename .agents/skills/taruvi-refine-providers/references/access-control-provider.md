@@ -26,7 +26,7 @@ Use prefixed ACL resource strings — format: `<kind>:<name>` (e.g., `datatable:
 ```tsx
 const { data } = useCan({
   resource: "datatable:posts",
-  action: "edit",
+  action: "update",
   params: { id: 1 },
 });
 
@@ -36,6 +36,46 @@ if (data?.can) {
 ```
 
 Do **not** use `params.entityType` — pass the prefixed resource string directly.
+
+## Action Mapping (UI -> Cerbos)
+
+Always map UI actions to canonical Cerbos actions before checks:
+
+| UI action | Cerbos action |
+|---|---|
+| `list` | `read` |
+| `show` | `read` |
+| `edit` | `update` |
+| `create` | `create` |
+| `delete` | `delete` |
+
+Never send raw UI actions (`list`, `show`, `edit`) to `/check/resources`.
+
+## `/check/resources` Payload Validation
+
+When validating network payloads:
+
+- `resource.kind` must be prefixed (`datatable:policies`), never bare (`policies`)
+- action names must be canonical (`read`, `update`, `create`, `delete`, `execute`)
+- `resource.kind` in request payload must exactly match the `resource` value passed in `useCan`/`CanAccess`
+
+Invalid payload example:
+
+```json
+{
+  "resource": { "kind": "policies", "id": "..." },
+  "actions": ["edit", "delete"]
+}
+```
+
+Valid payload example:
+
+```json
+{
+  "resource": { "kind": "datatable:policies", "id": "..." },
+  "actions": ["update", "delete"]
+}
+```
 
 ## CanAccess Component
 

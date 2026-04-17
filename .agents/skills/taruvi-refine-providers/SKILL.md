@@ -90,13 +90,27 @@ Use this matrix for the current non-deprecated provider surface:
 9. For access control checks, use only the published non-deprecated SDK/provider contract:
    - pass prefixed ACL resource strings (for example: `datatable:employees`, `function:employee-terminate`, `query:hrms-dashboard-summary`)
    - do not use `params.entityType` for `useCan`/`CanAccess` checks
-10. For backend-backed list pages, keep the list state in the provider query:
+   - map UI actions to Cerbos actions before access-control checks:
+     - `list` -> `read`
+     - `show` -> `read`
+     - `edit` -> `update`
+     - `create` -> `create`
+     - `delete` -> `delete`
+   - never send raw UI action names (`list`, `show`, `edit`) in `/check/resources` payloads
+10. For Taruvi function execution from frontend, enforce this exact contract (hard requirement):
+   - `dataProviderName: "app"`
+   - `meta.kind: "function"`
+   - `config.payload` for input params
+   - `url` must be the function slug
+   - do not use `values` for function input payloads
+   - no new usage of `functionsDataProvider` in frontend app code
+11. For backend-backed list pages, keep the list state in the provider query:
    - backend pagination is required by default
    - default list `pageSize` is `10`; recommend exposing `10`, `20`, `50`, and `100` page-size choices in the UI
    - search, filters, and sorters must be passed into provider calls by default
    - when rendering with MUI `DataGrid`, default to Refine `useDataGrid`
    - do not re-implement the primary list filtering logic in component state over fetched backend rows unless the user explicitly asked for client-side behavior
-11. For network-backed dropdowns/typeaheads:
+12. For network-backed dropdowns/typeaheads:
    - default to `Autocomplete` (or equivalent typeahead UX)
    - debounce search input before querying
    - pass search text into provider filters
@@ -115,8 +129,12 @@ After wiring providers, verify:
 - [ ] No new usage of deprecated package APIs
 - [ ] The chosen provider/hook path matches the installed package’s current non-deprecated API
 - [ ] `useCustom` calls for functions use `dataProviderName: "app"` and `meta.kind: "function"`
+- [ ] Function inputs are passed via `config.payload` (not `values`) for `meta.kind: "function"` calls
+- [ ] No new `functionsDataProvider` usage in frontend app code
 - [ ] Access-control checks use prefixed ACL resource strings from the published contract
 - [ ] Runtime network validation: in `check/resources` payload, each `resource.kind` exactly matches the requested `resource` string (no composition, no double-prefix)
+- [ ] Runtime network validation: `resource.kind` is never a bare resource name (for example `policies`) and always includes prefix (for example `datatable:policies`)
+- [ ] Runtime network validation: action names sent to `/check/resources` are canonical (`read`, `update`, `create`, `delete`, `execute`) and not raw UI labels (`list`, `show`, `edit`)
 - [ ] Backend-backed list pages use provider-driven pagination
 - [ ] Backend-backed list search/filter/sort state is passed into provider queries, not re-applied in React
 - [ ] Backend-backed MUI `DataGrid` list pages use `useDataGrid` by default (or include an explicit exception reason)
@@ -227,7 +245,9 @@ const { data } = useCustom({
   url: "employee-terminate",
   method: "post",
   dataProviderName: "app",
-  payload: { employee_id: "emp-1", termination_reason: "Policy violation" },
+  config: {
+    payload: { employee_id: "emp-1", termination_reason: "Policy violation" },
+  },
   meta: { kind: "function" },
 });
 ```
@@ -315,9 +335,11 @@ Refine operator keys supported by the Taruvi provider mapping:
 ## Gotchas
 
 - **Deprecated providers** — `functionsDataProvider` and `analyticsDataProvider` are removed. Migrate to `appDataProvider` + `useCustom` with `meta.kind: "function"` or `meta.kind: "analytics"`. Old imports will compile but throw at runtime.
+- **Wrong function payload shape** — for `meta.kind: "function"`, pass inputs via `config.payload`. Using `values` or top-level `payload` causes contract drift and runtime issues.
 - **Deprecated package path in new code** — do not add new code on deprecated providers or compatibility helpers just because old examples still exist. Use the installed package’s current canonical API surface.
 - **Auth redirect loop** — `authProvider.login()` redirects to `/accounts/login/` and tokens come back in the URL hash. Do not try to intercept mid-redirect or parse the URL yourself — the provider handles it.
 - **401 vs 403 confusion** — `onError()` handles both: 401 means session expired (trigger re-login), 403 means authenticated but forbidden (show access denied). Treating 403 as 401 causes infinite re-login loops.
+- **`/check/resources` payload drift** — if network logs show `resource.kind: "policies"` instead of `resource.kind: "datatable:policies"`, access-control wiring is incorrect and must be fixed before completion.
 - **Access-control resource format mismatch** — `useCan`/`CanAccess` expects prefixed ACL resources (for example `datatable:employees`). Do not pass `params.entityType`.
 - **Access-control resource format drift** — always pass prefixed resource strings directly. If `resource.kind` in network payload differs from the requested `resource`, there is a contract mismatch.
 - **DataLoader batching** — `accessControlProvider` batches `useCan` calls automatically via DataLoader. Do not debounce or throttle `useCan` manually — it will interfere with the batch delay and cause missed permission checks.

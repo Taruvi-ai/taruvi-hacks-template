@@ -114,7 +114,7 @@
     "taruvi-refine-providers": {
       "source": "Taruvi-ai/taruvi-skills",
       "sourceType": "github",
-      "computedHash": "4bba1e896684c6504eac98a4b6c461185cf3d3ebe13e6a3187e638d9611f2248"
+      "computedHash": "a6e7cee45cd1359659494d216a6d7ddc4afb42119e3ae04ecec2a939b58b88c6"
     },
     "taruvi-storage": {
       "source": "Taruvi-ai/taruvi-skills",
