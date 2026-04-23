@@ -18,8 +18,7 @@ It includes:
 ### Organizer-side (Advanced setup)
 1. Sign up for GitHub Codespaces in Advanced.
 2. Create sites for each group based on color coding in Advanced.
-3. Set `OPENAI_API_KEY` as a GitHub Codespaces secret on this repository (or at the organization level) so it is automatically injected into every participant's Codespace.
-4. Ensure participants accept their Taruvi Console invite.
+3. Ensure participants accept their Taruvi Console invite.
 
 ### Participant-side setup
 0. In Taruvi Console, create your app and collect:
