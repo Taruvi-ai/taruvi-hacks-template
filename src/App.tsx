@@ -23,7 +23,7 @@ import {
   taruviUserProvider,
   // taruviAccessControlProvider, // Uncomment to enable Cerbos-based access control
 } from "./providers/refineProviders";
-import { ConsoleLogDrawer, CustomSider, ErrorBoundary, UnsavedChangesDialog } from "./components";
+import { CustomSider, ErrorBoundary, UnsavedChangesDialog } from "./components";
 import { LoginRedirect } from "./components/auth/LoginRedirect";
 import { ColorModeContextProvider, ColorModeContext } from "./contexts/color-mode";
 import {AppSettingsProvider, useAppSettings} from "./contexts/app-settings";
@@ -94,7 +94,6 @@ const AppContent = () => {
                               <Outlet />
                             </ErrorBoundary>
                           </Box>
-                          <ConsoleLogDrawer />
                         </ThemedLayout>
                       </Authenticated>
                     }
