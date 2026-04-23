@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taruvi Schema Builder"
+  short_description: "Design Taruvi database schemas from app ideas"
+  default_prompt: "Use $taruvi-schema-builder to turn my app idea into a Taruvi database schema and the first resources I should build."
