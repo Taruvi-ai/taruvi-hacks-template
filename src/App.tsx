@@ -12,6 +12,8 @@ import Navkit from '@taruvi/navkit';
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import GlobalStyles from "@mui/material/GlobalStyles";
+import LocalFloristRoundedIcon from "@mui/icons-material/LocalFloristRounded";
+import ReceiptLongRoundedIcon from "@mui/icons-material/ReceiptLongRounded";
 import routerProvider, { DocumentTitleHandler } from "@refinedev/react-router";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router";
 import { taruviClient } from "./taruviClient";
@@ -29,6 +31,8 @@ import { ColorModeContextProvider, ColorModeContext } from "./contexts/color-mod
 import {AppSettingsProvider, useAppSettings} from "./contexts/app-settings";
 import { useContext, useRef, useEffect } from "react";
 import { Home } from "./pages/home";
+import { BouquetCreate, BouquetEdit, BouquetList, BouquetShow } from "./pages/bouquets";
+import { OrderEdit, OrderList, OrderShow } from "./pages/orders";
 
 const AppContent = () => {
   const { setMode } = useContext(ColorModeContext);
@@ -73,7 +77,21 @@ const AppContent = () => {
                 authProvider={taruviAuthProvider}
                 // accessControlProvider={taruviAccessControlProvider} // Uncomment to enable Cerbos-based access control
                 resources={[
-                  // Add your resources here
+                  {
+                    name: "bouquets",
+                    list: "/bouquets",
+                    create: "/bouquets/create",
+                    edit: "/bouquets/edit/:id",
+                    show: "/bouquets/show/:id",
+                    meta: { canDelete: true, label: "Bouquets", aclResource: "datatable:bouquets", icon: <LocalFloristRoundedIcon /> },
+                  },
+                  {
+                    name: "orders",
+                    list: "/orders",
+                    edit: "/orders/edit/:id",
+                    show: "/orders/show/:id",
+                    meta: { canDelete: false, label: "Orders", aclResource: "datatable:orders", icon: <ReceiptLongRoundedIcon /> },
+                  },
                 ]}
                 options={{
                   syncWithLocation: true,
@@ -82,14 +100,12 @@ const AppContent = () => {
                 }}
               >
                 <Routes>
+                  <Route index element={<Home />} />
                   <Route
                     element={
-                      <Authenticated
-                        key="authenticated-inner"
-                        fallback={<LoginRedirect />}
-                      >
+                      <Authenticated key="authenticated-inner" fallback={<LoginRedirect />}>
                         <ThemedLayout Header={() => null} Sider={CustomSider} initialSiderCollapsed={true}>
-                          <Box sx={{ ml: { xs: 0, md: '72px' }, transition: 'margin-left 0.2s ease-in-out' }}>
+                          <Box sx={{ ml: { xs: 0, md: "72px" }, transition: "margin-left 0.2s ease-in-out" }}>
                             <ErrorBoundary>
                               <Outlet />
                             </ErrorBoundary>
@@ -99,7 +115,13 @@ const AppContent = () => {
                       </Authenticated>
                     }
                   >
-                    <Route index element={<Home />} />
+                    <Route path="bouquets" element={<BouquetList />} />
+                    <Route path="bouquets/create" element={<BouquetCreate />} />
+                    <Route path="bouquets/edit/:id" element={<BouquetEdit />} />
+                    <Route path="bouquets/show/:id" element={<BouquetShow />} />
+                    <Route path="orders" element={<OrderList />} />
+                    <Route path="orders/edit/:id" element={<OrderEdit />} />
+                    <Route path="orders/show/:id" element={<OrderShow />} />
                     <Route path="*" element={<ErrorComponent />} />
                   </Route>
                 </Routes>
