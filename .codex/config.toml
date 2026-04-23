@@ -1,3 +1,5 @@
+model = "gpt-5.4-mini"
+
 [mcp_servers.taruvi]
 url = "http://tenant1.127.0.0.1.nip.io:8000/mcp/"
 
