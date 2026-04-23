@@ -96,10 +96,20 @@
       "sourceType": "github",
       "computedHash": "6066e73875e4770e624641355cc04662ce75d2b1d1a3673e24dcbd0ec8936297"
     },
+    "taruvi-app-builder": {
+      "source": "/home/curran/Desktop/Projects/skills",
+      "sourceType": "local",
+      "computedHash": "6324a1256833a950dd08b8f450a476fa00a98f43a986a6d53ce90b24390ffca4"
+    },
     "taruvi-app-developer": {
       "source": "Taruvi-ai/taruvi-skills",
       "sourceType": "github",
       "computedHash": "d52add8542053ddcec15e5f83692d9544c4f8b821b97c92559912ed682b6a0ed"
+    },
+    "taruvi-backend-provisioning": {
+      "source": "/home/curran/Desktop/Projects/skills",
+      "sourceType": "local",
+      "computedHash": "e042206ea03315ef60ecc02fcb3425c2c6426525c5fe883e060381e3a75c20c1"
     },
     "taruvi-database": {
       "source": "Taruvi-ai/taruvi-skills",
@@ -107,9 +117,14 @@
       "computedHash": "23835cc270d013677518fb5edd1a1da57e199550dcf125e3ebabc7c2a29d820b"
     },
     "taruvi-functions": {
-      "source": "Taruvi-ai/taruvi-skills",
-      "sourceType": "github",
-      "computedHash": "2c6ff95723a0929f1d2881b63598aca4380d7727e347b30ff04793570d38b869"
+      "source": "/home/curran/Desktop/Projects/skills",
+      "sourceType": "local",
+      "computedHash": "7030bfbc712049bdcdeed9ca94aefa58d7835ff0af172b067852549d4760e647"
+    },
+    "taruvi-refine-frontend": {
+      "source": "/home/curran/Desktop/Projects/skills",
+      "sourceType": "local",
+      "computedHash": "727d03fe0f140febac8cf8c6074e089ea7e48d650c934147dcd4cc4389b9d99c"
     },
     "taruvi-refine-providers": {
       "source": "Taruvi-ai/taruvi-skills",

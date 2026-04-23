@@ -51,8 +51,8 @@ If the file is missing, no errors have been captured yet — ask the user to rep
 
 For any task involving Taruvi, Refine + Taruvi, `@taruvi/sdk`, or `@taruvi/refine-providers`:
 
-1. You MUST open and read `.codex/skills/taruvi-app-developer/SKILL.md` first — it routes you to the right module skills.
-2. If `.codex/skills/taruvi-app-developer/SKILL.md` is missing, inform the user to install skills by running `npx skills add Taruvi-ai/taruvi-skills`.
+1. You MUST open and read `.codex/skills/taruvi-app-builder/SKILL.md` first — it routes you to the right module skills.
+2. If `.codex/skills/taruvi-app-builder/SKILL.md` is missing, inform the user to install skills by running `npx skills add Taruvi-ai/skills`.
 3. Follow its Step 4 to load all relevant module skills before writing any code.
 
 Do not implement from memory. Do not treat prior knowledge as sufficient. If these files are unavailable, stop and say so.
@@ -136,13 +136,13 @@ const { dataGridProps, tableQuery, result } = useDataGrid({ resource: "blog_post
 **Resource Registration:**
 ```typescript
 resources={[{
-  name: "categories",           // Database table name
-  list: "/categories",
-  create: "/categories/create",
-  edit: "/categories/edit/:id",
-  show: "/categories/show/:id",
-  meta: { canDelete: true, label: "Categories", icon: <CategoryIcon /> },
-}]}
+      name: "categories",           // Database table name
+      list: "/categories",
+      create: "/categories/create",
+      edit: "/categories/edit/:id",
+      show: "/categories/show/:id",
+      meta: { canDelete: true, label: "Categories", icon: <CategoryIcon /> },
+   }]}
 ```
 
 ### Common Refine Hooks (v5 Syntax)
@@ -167,15 +167,15 @@ resources={[{
 **One-to-Many (edit form with autocomplete):**
 ```typescript
 <Controller control={control} name="category_id"
-  render={({ field }) => (
-    <Autocomplete {...autocompleteProps} {...field}
-      onChange={(_, value) => field.onChange(value?.id)}
-      getOptionLabel={(item) => item.title}
-      renderInput={(params) => (
+render={({ field }) => (
+        <Autocomplete {...autocompleteProps} {...field}
+onChange={(_, value) => field.onChange(value?.id)}
+getOptionLabel={(item) => item.title}
+renderInput={(params) => (
         <TextField {...params} label="Category" error={!!(errors as any)?.category_id} />
-      )}
-    />
-  )}
+)}
+/>
+)}
 />
 ```
 
@@ -183,9 +183,9 @@ resources={[{
 ```typescript
 const { result: blogPost, query: { isLoading } } = useShow({ resource: "blog_posts" });
 const { result: category, query: { isLoading: categoryLoading } } = useOne({
-  resource: "categories",
-  id: blogPost?.category_id,
-  queryOptions: { enabled: !!blogPost?.category_id },
+   resource: "categories",
+   id: blogPost?.category_id,
+   queryOptions: { enabled: !!blogPost?.category_id },
 });
 // blogPost and category are direct objects, no need for .data
 ```
@@ -203,9 +203,9 @@ TARUVI_APP_SLUG=sample-app
 // src/taruviClient.ts
 import { Client } from "@taruvi/sdk";
 export const taruviClient = new Client({
-  apiUrl: __TARUVI_SITE_URL__,
-  apiKey: __TARUVI_API_KEY__,
-  appSlug: __TARUVI_APP_SLUG__,
+   apiUrl: __TARUVI_SITE_URL__,
+   apiKey: __TARUVI_API_KEY__,
+   appSlug: __TARUVI_APP_SLUG__,
 });
 // Used by all providers. Direct SDK: taruviClient.httpClient.get("api/...");
 ```

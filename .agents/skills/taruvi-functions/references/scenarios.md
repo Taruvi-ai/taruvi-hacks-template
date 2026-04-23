@@ -1,49 +1,50 @@
-# Scenarios
+# Scenarios — right-vs-wrong worked examples
 
-## Error Handling Pattern
+Five end-to-end patterns that show *when* a Taruvi function is the right answer, with the TypeScript frontend call alongside. Use these as templates when the agent has to decide "should this be a function or a direct Refine call?"
 
-```python
-def main(params, user_data, sdk_client):
-    required = ["order_id", "action"]
-    missing = [k for k in required if k not in params]
-    if missing:
-        return {"success": False, "error": f"Missing: {', '.join(missing)}"}
+The templates in [function-templates.md](function-templates.md) are starting skeletons. This file complements them by showing frontend + backend together and — importantly — the common wrong-way pattern for contrast.
 
-    try:
-        result = sdk_client.database.get("orders", record_id=params["order_id"])
-        return {"success": True, "data": result}
-    except Exception as e:
-        log(f"Error: {str(e)}", level="error")
-        return {"success": False, "error": str(e), "error_type": type(e).__name__}
-```
+## Scenario 1: Multi-resource cascade delete
 
----
+**When**: user deletes a task; related attachments (in storage) and activities (in another table) must also be removed.
 
-## Scenario 1: Multi-Resource Cascade Delete
+### Wrong — frontend orchestrates the cascade
 
-**When:** User deletes a task. Need to also delete attachments from storage + task activities.
-
-**Wrong — frontend cascade:**
 ```typescript
-// ❌ DON'T — unreliable, slow, race-prone
+// Frontend orchestrates 4 separate requests. Unreliable, slow,
+// partial-failure leaves orphans.
 await dataProvider().deleteMany({ resource: "tasks", ids });
-const attachments = await dataProvider().getList({ resource: "task_attachments", ... });
+
+const attachments = await dataProvider().getList({
+  resource: "task_attachments",
+  filters: [{ field: "task_id", operator: "in", value: ids }],
+});
+
 for (const a of attachments.data) {
   await storageProvider.deleteOne({ resource: "task-attachments", id: a.path });
 }
-await dataProvider().deleteMany({ resource: "task_attachments", ids: attachmentIds });
+await dataProvider().deleteMany({
+  resource: "task_attachments",
+  ids: attachments.data.map(a => a.id),
+});
 await dataProvider().deleteMany({ resource: "task_activities", ids: activityIds });
 ```
 
-**Right — frontend does primary delete, function handles the rest:**
-```typescript
-// ✅ Frontend: delete tasks (single resource — OK)
-await dataProvider().deleteMany!({ resource: "tasks", ids: cascadeDeleteOrder });
+Why it's wrong:
+- Each hop is a separate network call — total latency is the sum.
+- If the browser navigates or loses connection midway, the DB is left inconsistent.
+- Race conditions: two deletes running concurrently can interleave.
+- No server-side audit log of the cascade operation.
 
-// ✅ Function: durable cleanup of related resources
-executeFunctionAsync("cleanup-deleted-tasks", {
-  task_ids: cascadeDeleteOrder,
-}).catch(e => console.warn("Cleanup failed:", e));
+### Right — frontend deletes the primary, function handles cleanup
+
+```typescript
+// Frontend: delete the primary resource only (single-resource is fine for Refine).
+await dataProvider().deleteMany({ resource: "tasks", ids });
+
+// Function: durable cleanup of related resources, async so the UI isn't blocked.
+executeFunctionAsync("cleanup-deleted-tasks", { task_ids: ids })
+  .catch(e => console.warn("Cleanup scheduled but will complete async:", e));
 ```
 
 ```python
@@ -53,47 +54,57 @@ def main(params, user_data, sdk_client):
         return {"success": True, "deleted": 0}
 
     for task_id in task_ids:
-        attachments = sdk_client.database.from_("task_attachments") \
-            .filter("task_id", "eq", task_id) \
-            .populate("storage_object_id") \
+        # Find attachments with their storage object
+        attachments = (sdk_client.database
+            .from_("task_attachments")
+            .filter("task_id", "eq", task_id)
+            .populate("storage_object_id")
             .execute()
+        )
 
         for att in attachments.get("data", []):
             storage_obj = att.get("storage_object_id")
             if storage_obj and storage_obj.get("path"):
                 try:
                     sdk_client.storage.from_("task-attachments").delete([storage_obj["path"]])
-                except Exception as e:
-                    log(f"Storage delete failed: {e}", level="warning")
+                except Exception as exc:
+                    log("Storage delete failed", level="warning", data={"path": storage_obj["path"], "exc": str(exc)})
             sdk_client.database.delete("task_attachments", record_id=att["id"])
 
-    for task_id in task_ids:
-        activities = sdk_client.database.from_("task_activities") \
-            .filter("task_id", "eq", task_id) \
+        activities = (sdk_client.database
+            .from_("task_activities")
+            .filter("task_id", "eq", task_id)
             .execute()
+        )
         activity_ids = [a["id"] for a in activities.get("data", [])]
         if activity_ids:
             sdk_client.database.delete("task_activities", ids=activity_ids)
 
-    log(f"Cleaned up attachments and activities for {len(task_ids)} tasks", level="info")
+    log(f"Cleaned up related resources for {len(task_ids)} tasks", level="info")
     return {"success": True, "tasks_cleaned": len(task_ids)}
 ```
 
 ---
 
-## Scenario 2: Employee Onboarding (Multi-Resource Create)
+## Scenario 2: Multi-resource create (employee onboarding)
 
-**When:** Creating an employee requires: create user → create salary record → create payroll record → notify HR.
+**When**: creating an employee must also create a salary record, a payroll record, and send an HR notification.
+
+### Right — frontend creates the user, function fans out
 
 ```typescript
-// Frontend: create user (single resource — OK)
-const result = await createUser({ resource: "users", dataProviderName: "user", values: userData });
+// Single-resource create from the frontend — fine.
+const result = await createUser({
+  resource: "users",
+  dataProviderName: "user",
+  values: userData,
+});
 
-// Function: everything else
+// Everything else server-side so it's atomic and auditable.
 executeFunctionAsync("onboard-employee", {
   employee_id: result.data.id,
   employee_name: fullName,
-}).catch(err => console.error("Onboarding error:", err));
+}).catch(err => console.error("Onboarding scheduled:", err));
 ```
 
 ```python
@@ -104,61 +115,81 @@ def main(params, user_data, sdk_client):
     sdk_client.database.create("salaries", {
         "employee_id": emp_id,
         "base_salary": 0,
-        "status": "pending_review"
+        "status": "pending_review",
     })
 
     sdk_client.database.create("payroll", {
         "employee_id": emp_id,
         "pay_period": "monthly",
-        "status": "setup"
+        "status": "setup",
     })
 
     sdk_client.functions.execute("send-slack-notification", params={
         "channel": "#hr",
-        "message": f"New employee onboarded: {emp_name}"
+        "message": f"New employee onboarded: {emp_name}",
     }, is_async=True)
 
+    log("Employee onboarded", level="info", data={"employee_id": emp_id, "name": emp_name})
     return {"success": True, "employee_id": emp_id}
 ```
 
+**Rule of thumb**: if a user action touches **2+ resources**, it's a function.
+
 ---
 
-## Scenario 3: Scheduled Report (Cron Job)
+## Scenario 3: Scheduled / cron job
 
-**Trigger type:** Schedule. Cron `0 8 * * 1` = Monday 8am.
+**When**: runs on a schedule, no direct user trigger. Cron `0 8 * * 1` = Monday 08:00.
 
 ```python
+from datetime import datetime, timedelta, timezone
+
 def main(params, user_data, sdk_client):
+    # Scheduled runs have user_data=None. Use a service key if elevated ops needed.
     revenue = sdk_client.analytics.execute("weekly-revenue", params={
-        "period": "last_7_days"
+        "period": "last_7_days",
     })
 
-    signups = sdk_client.database.from_("users") \
-        .filter("created_at", "gte", params.get("start_date")) \
+    start = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    signups = (sdk_client.database
+        .from_("users")
+        .filter("created_at", "gte", start)
         .count()
+    )
 
-    log(f"Weekly report: revenue={revenue['total']}, signups={signups}", level="info")
+    log("Weekly report", level="info", data={
+        "revenue": revenue["data"]["total"],
+        "new_signups": signups,
+    })
     return {"revenue": revenue["data"], "new_signups": signups}
 ```
 
+Register with the `manage_function` MCP tool with the appropriate scheduler trigger config (see `taruvi-backend-provisioning`).
+
 ---
 
-## Scenario 4: React to Data Change (Event-Driven)
+## Scenario 4: Event-driven (react to data change)
 
-**Trigger:** `RECORD_CREATE` with filter `event.datatable == "orders" && event.data.status == "paid"`
+**When**: fire automatically when a row is created/updated/deleted matching a filter.
+
+Trigger: `RECORD_CREATE` on `orders` with filter `event.data.status == "paid"`.
 
 ```python
 def main(params, user_data, sdk_client):
-    order = params
-    log(f"New paid order: {order.get('id')}", level="info")
+    order = params  # event payload is in params
 
-    sdk_client.database.update("products", record_id=order["product_id"], data={
-        "stock": order["current_stock"] - order["quantity"]
-    })
+    log("Paid order received", level="info", data={"order_id": order.get("id")})
 
+    # Decrement product stock
+    sdk_client.database.update("products",
+        record_id=order["product_id"],
+        data={"stock": order["current_stock"] - order["quantity"]},
+    )
+
+    # Fan out to fulfillment notifier
     sdk_client.functions.execute("notify-fulfillment", params={
         "order_id": order["id"],
-        "customer": order["customer_name"]
+        "customer": order["customer_name"],
     }, is_async=True)
 
     return {"processed": True}
@@ -166,85 +197,50 @@ def main(params, user_data, sdk_client):
 
 ---
 
-## Scenario 5: Call External API with Stored Secret
+## Scenario 5: Public webhook receiver
+
+**When**: external service POSTs to Taruvi. Register with `is_public=True` and accept at `/api/public/apps/{app_slug}/functions/{slug}/execute/`.
 
 ```python
 def main(params, user_data, sdk_client):
-    import requests
+    # user_data is None for public invocations — guard accordingly.
+    event_type = params.get("type")
 
-    api_key = sdk_client.secrets.get("OPENAI_API_KEY")
-    response = requests.post(
-        "https://api.openai.com/v1/chat/completions",
-        headers={"Authorization": f"Bearer {api_key['value']}"},
-        json={
-            "model": "gpt-4",
-            "messages": [{"role": "user", "content": params["prompt"]}]
-        },
-        timeout=30
-    )
-    response.raise_for_status()
-    return {"reply": response.json()["choices"][0]["message"]["content"]}
-```
-
----
-
-## Scenario 6: User Lifecycle Hook
-
-**Trigger:** `POST_USER_CREATE` — runs after every new user is created.
-
-```python
-def main(params, user_data, sdk_client):
-    new_user = params
-
-    sdk_client.users.assign_roles(roles=["viewer"], usernames=[new_user["username"]])
-
-    sdk_client.database.create("profiles", {
-        "user_id": new_user["id"],
-        "username": new_user["username"],
-        "onboarding_complete": False
-    })
-
-    sdk_client.functions.execute("send-welcome-email", params={
-        "email": new_user["email"],
-        "name": new_user.get("first_name", new_user["username"])
-    }, is_async=True)
-
-    return {"setup_complete": True}
-```
-
----
-
-## Scenario 7: Public Webhook Receiver
-
-**Set `is_public=True`.** Accessible at `/api/public/apps/{app_slug}/functions/{slug}/execute/`:
-
-```python
-def main(params, user_data, sdk_client):
-    if params.get("type") == "payment.completed":
+    if event_type == "payment.completed":
         sdk_client.database.create("payments", {
             "external_id": params["id"],
             "amount": params["amount"],
-            "status": "completed"
+            "status": "completed",
         })
+        log("Payment recorded", level="info", data={"external_id": params["id"]})
         return {"received": True}
+
+    log("Webhook ignored", level="info", data={"type": event_type})
     return {"ignored": True}
 ```
 
+**Security note**: public functions run unauthenticated. Verify a shared secret or signature from the caller before trusting `params`.
+
 ---
 
-## Scenario 8: Long-Running Task (Async)
+## Decision flowchart (is this a function?)
 
-**When:** Data import, report generation, or batch operations that take >30 seconds.
-
-```typescript
-// ✅ Fire async, get task_id, poll later
-const result = await executeFunction(
-  "import-10k-records",
-  { file_path: "data.csv" },
-  { kind: "function", async: true }
-);
-const taskId = result.invocation.celery_task_id;
-
-// Poll for result
-const status = await executeFunction("check-task-status", { task_id: taskId });
 ```
+Does the task...
+├── Touch 2+ resources (tables + storage, or tables + secrets + users)?  → YES, function
+├── React to a data-change event or user lifecycle hook?                 → YES, function
+├── Run on a schedule (cron)?                                            → YES, function
+├── Call an external API with a stored secret?                           → YES, function
+├── Accept unauthenticated webhooks?                                     → YES, function
+├── Run longer than ~30 seconds (data import, batch op, report)?         → YES, function (async)
+└── Single-resource CRUD a frontend user triggered?                      → NO, use Refine hooks
+```
+
+When in doubt, lean toward function. Server-side is easier to audit, easier to retry, and keeps the frontend thin.
+
+## Anti-patterns these scenarios avoid
+
+- **Frontend orchestrates multi-resource transactions** — race-prone, partial-failure-unsafe
+- **Browser runs long jobs** — freezes the UI, dies on navigation
+- **External API calls from the browser with keys** — leaks credentials into the bundle
+- **Cascade cleanup in React** — first network blip leaves orphans in the DB/storage

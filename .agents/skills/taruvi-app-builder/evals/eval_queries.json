@@ -1,0 +1,18 @@
+[
+  { "query": "I want to scaffold a new app on Taruvi from scratch with auth and a posts resource", "should_trigger": true },
+  { "query": "add a full comments feature to my Taruvi blog — table, policy, frontend pages", "should_trigger": true },
+  { "query": "build me an end-to-end feedback collection app on Taruvi", "should_trigger": true },
+  { "query": "I need to add a file-upload feature that spans bucket setup, a trigger function, and Refine UI", "should_trigger": true },
+  { "query": "help me plan a multi-layer feature on my Taruvi app — where do I start?", "should_trigger": true },
+  { "query": "what does an AGENTS.md for a Taruvi app look like?", "should_trigger": true },
+  { "query": "I'm adding a new entity and want to do it properly across backend + frontend", "should_trigger": true },
+  { "query": "create a single datatable called invoices", "should_trigger": false },
+  { "query": "write a Python function that processes uploaded CSVs", "should_trigger": false },
+  { "query": "add a list page for users using useList", "should_trigger": false },
+  { "query": "update the Cerbos policy on my posts table", "should_trigger": false },
+  { "query": "fix this Refine useCan call that's always returning false", "should_trigger": false },
+  { "query": "how do I deploy a FastAPI app", "should_trigger": false },
+  { "query": "what's the syntax for a Django model again", "should_trigger": false },
+  { "query": "help me style my Ant Design table with Tailwind", "should_trigger": false },
+  { "query": "debug my pytest failing assertion", "should_trigger": false }
+]

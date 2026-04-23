@@ -1,0 +1,18 @@
+[
+  { "query": "write the Python body for a Taruvi function that processes an order", "should_trigger": true },
+  { "query": "I need a cron function that cleans up expired sessions every night", "should_trigger": true },
+  { "query": "write a webhook handler for Stripe events", "should_trigger": true },
+  { "query": "help me with this def main(params, user_data, sdk_client) signature", "should_trigger": true },
+  { "query": "how do I call an external API from inside a Taruvi function with a stored secret", "should_trigger": true },
+  { "query": "the cleanup after deleting tasks is unreliable — I think it needs a function", "should_trigger": true },
+  { "query": "this data import takes 2 minutes and the browser freezes, can we run it server-side async", "should_trigger": true },
+  { "query": "write a function that handles multi-resource cascade delete for tasks and their attachments", "should_trigger": true },
+  { "query": "how does signInWithToken work inside a function body", "should_trigger": true },
+  { "query": "create a datatable called products", "should_trigger": false },
+  { "query": "build a CRUD table for orders with filters and sorting", "should_trigger": false },
+  { "query": "set up the Refine auth provider and access control", "should_trigger": false },
+  { "query": "add a Cerbos policy for the users table", "should_trigger": false },
+  { "query": "write a Python script to parse CSV files on my local machine", "should_trigger": false },
+  { "query": "how do I upload a file to a Refine storage page", "should_trigger": false },
+  { "query": "help me configure AWS Lambda functions", "should_trigger": false }
+]

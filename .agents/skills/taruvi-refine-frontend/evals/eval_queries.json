@@ -1,0 +1,18 @@
+[
+  { "query": "build a Refine list page for the orders table with filters and pagination", "should_trigger": true },
+  { "query": "wire up @taruvi/refine-providers in my App.tsx", "should_trigger": true },
+  { "query": "useList is returning empty for my posts — table exists, what's wrong", "should_trigger": true },
+  { "query": "how do I populate the author field in a useList call", "should_trigger": true },
+  { "query": "add a useCan check to gate the edit button per row", "should_trigger": true },
+  { "query": "build a dashboard with KPI cards showing counts by status", "should_trigger": true },
+  { "query": "use useCustom with meta.kind analytics to execute a revenue query", "should_trigger": true },
+  { "query": "set up the auth provider and redirect-based OAuth flow", "should_trigger": true },
+  { "query": "meta.idColumnName isn't working on my user_profiles table", "should_trigger": true },
+  { "query": "add file upload with the storage data provider", "should_trigger": true },
+  { "query": "write the Python body for a cleanup function", "should_trigger": false },
+  { "query": "create a new datatable called invoices via MCP", "should_trigger": false },
+  { "query": "add a Cerbos policy to my orders table", "should_trigger": false },
+  { "query": "register a new serverless function metadata", "should_trigger": false },
+  { "query": "create a private storage bucket with a 5MB limit", "should_trigger": false },
+  { "query": "how do I style a button with Tailwind", "should_trigger": false }
+]
