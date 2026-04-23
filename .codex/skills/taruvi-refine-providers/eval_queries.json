@@ -1,0 +1,18 @@
+[
+  { "query": "I need to set up the data providers in my React app for the first time", "should_trigger": true },
+  { "query": "I'm getting a 401 error right after login, the session seems expired immediately", "should_trigger": true },
+  { "query": "how do I call a backend function from the frontend using useCustom", "should_trigger": true },
+  { "query": "the permission check hook is returning wrong results for the orders resource", "should_trigger": true },
+  { "query": "I need to migrate off the old functionsDataProvider to the new one", "should_trigger": true },
+  { "query": "wire up auth and access control in the Refine app", "should_trigger": true },
+  { "query": "my app keeps redirecting to the login page in a loop after I authenticate", "should_trigger": true },
+  { "query": "set up the SDK client with the API key and app slug from the env file", "should_trigger": true },
+  { "query": "write a serverless function that processes orders and updates inventory", "should_trigger": false },
+  { "query": "I need to upload files to a storage bucket", "should_trigger": false },
+  { "query": "build a dashboard with aggregate queries grouped by status", "should_trigger": false },
+  { "query": "help me set up authentication with Firebase", "should_trigger": false },
+  { "query": "optimize my database queries for a large table with 100k rows", "should_trigger": false },
+  { "query": "configure Redux state management in my app", "should_trigger": false },
+  { "query": "write a Python backend API with Flask", "should_trigger": false },
+  { "query": "set up React Router for my single-page app", "should_trigger": false }
+]
