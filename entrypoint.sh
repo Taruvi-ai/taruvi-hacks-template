@@ -31,12 +31,12 @@ Authorization = "Api-Key ${TARUVI_API_KEY}"
 X-App-Slug = "${TARUVI_APP_SLUG}"
 EOF
 
-echo "=== Fetching OPENAI_API_KEY from Taruvi secrets ==="
-OPENAI_API_KEY=$(curl -sf \
+echo "=== Fetching auth credentials from Taruvi secrets ==="
+curl -sf \
   -H "Authorization: Api-Key ${TARUVI_API_KEY}" \
   "${TARUVI_SITE_URL}/api/secrets/OPENAI_API_KEY/" \
-  | python3 -c "import sys,json; print(json.load(sys.stdin)['value'])")
-export OPENAI_API_KEY
+  | python3 -c "import sys,json; d=json.load(sys.stdin); v=d['value']; print(json.dumps(v) if isinstance(v,dict) else v)" \
+  > "$CODEX_HOME/auth.json"
 
 echo "=== Codex config written to $CODEX_HOME/config.toml ==="
 
