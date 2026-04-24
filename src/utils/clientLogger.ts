@@ -42,6 +42,13 @@ type Store = {
 };
 
 const INSTALL_FLAG = "__tv_client_logger_installed__";
+const ENABLE_LOGGER = (): boolean => {
+  try {
+    return Boolean((import.meta as { env?: { VITE_ENABLE_CLIENT_LOGGER?: string } }).env?.VITE_ENABLE_CLIENT_LOGGER === "true");
+  } catch {
+    return false;
+  }
+};
 
 const store: Store = {
   entries: [],
@@ -364,6 +371,7 @@ const patchConsole = (): void => {
 export const installClientLogger = (): void => {
   if (typeof window === "undefined") return;
   if (!isDev()) return;
+  if (!ENABLE_LOGGER()) return;
   const w = window as unknown as Record<string, unknown>;
   if (w[INSTALL_FLAG]) return;
   w[INSTALL_FLAG] = true;
@@ -409,6 +417,7 @@ export const reportError = (
   values: unknown[],
   meta?: Record<string, unknown>,
 ): void => {
+  if (!ENABLE_LOGGER() || !isDev()) return;
   record(source, values, meta);
 };
 

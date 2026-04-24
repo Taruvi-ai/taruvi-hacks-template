@@ -57,6 +57,15 @@ For any task involving Taruvi, Refine + Taruvi, `@taruvi/sdk`, or `@taruvi/refin
 
 Do not implement from memory. Do not treat prior knowledge as sufficient. If these files are unavailable, stop and say so.
 
+### User Data Access Rule (Mandatory)
+- Taruvi platform already provides built-in user management (users, roles, auth).
+- Never create custom user/auth datatables (for example: `users`, `auth_users`, `user_roles`, `passwords`, `sessions`) to replace platform identity.
+- Never access `auth_user` through datatable routes from frontend code (for example `datatables/auth_user/data`).
+- Never use `resource: "auth_user"` in Refine hooks/components.
+- Always access users via the `user` provider (`dataProviderName: "user"`, with `resource: "users"`).
+- Manage users/roles through the dedicated user/app APIs and MCP tools (`list_users`, `create_user`, `update_user`, `manage_roles`, `manage_role_assignments`) — not manual SQL CRUD on identity data.
+- If user identity data is not available to the current role, degrade gracefully in UI (no crashing/spammy retries).
+
 ## IMPORTANT: Refine v5 Syntax Changes
 
 **This project uses Refine v5** - Hook syntax has changed significantly from v4.
@@ -287,6 +296,8 @@ npm run refine       # Run Refine CLI
 15. **Use `dataProviderName`** - Specify which provider (storage, functions, app, user, analytics)
 16. **All 8 providers are configured** - See `/src/providers/refineProviders.ts`
 17. **Import types from refineProviders** - `import type { TaruviUser, TaruviMeta } from "./providers/refineProviders"`
+18. **Never query `auth_user` as a datatable** - Always use the `user` provider for user/role operations
+19. **Never build custom auth/user tables** - Use platform user management and role APIs instead of manual identity datatables
 
 This is a **Refine.dev v5 project** - leverage the framework's hooks and patterns rather than reinventing CRUD operations.
 

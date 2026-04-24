@@ -1,0 +1,18 @@
+[
+  { "query": "I need to add profile photo uploads to the user settings page", "should_trigger": true },
+  { "query": "build a file manager page that lists files with folder-style prefix filtering", "should_trigger": true },
+  { "query": "I need to bulk delete old attachments that are no longer referenced", "should_trigger": true },
+  { "query": "how do I configure bucket visibility and restrict uploads to only images", "should_trigger": true },
+  { "query": "my file uploads are failing silently, no error message, just nothing happens", "should_trigger": true },
+  { "query": "show storage usage in the UI with a warning when the bucket is almost full", "should_trigger": true },
+  { "query": "build an attachment list component where users can upload and download files", "should_trigger": true },
+  { "query": "I need to upload 50 images at once, is there a batch endpoint", "should_trigger": true },
+  { "query": "build a dashboard with KPI cards showing order counts by status", "should_trigger": false },
+  { "query": "write a backend function that processes payments", "should_trigger": false },
+  { "query": "set up the auth provider and login flow", "should_trigger": false },
+  { "query": "I need to manage user accounts and roles", "should_trigger": false },
+  { "query": "help me upload files to AWS S3 with presigned URLs", "should_trigger": false },
+  { "query": "configure a CDN for serving static assets from CloudFront", "should_trigger": false },
+  { "query": "set up file uploads with Multer in my Express server", "should_trigger": false },
+  { "query": "write a Python script that reads and writes files on disk", "should_trigger": false }
+]
