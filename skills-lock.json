@@ -99,7 +99,12 @@
     "taruvi-app-developer": {
       "source": "Taruvi-ai/taruvi-skills",
       "sourceType": "github",
-      "computedHash": "0c8c43c064a8517fbd76554c8257c9ecf725d849bf1380640e7a515df44c9eb5"
+      "computedHash": "ec83a418a2ea0e7d61663313ae4a02411a3571eaf6a27d39cb4d09dccf3abdbb"
+    },
+    "taruvi-backend-provisioning": {
+      "source": "Taruvi-ai/taruvi-skills",
+      "sourceType": "github",
+      "computedHash": "9d3451dfd6c95e4519551c53b4be6a8bff1afc120a4056360ec6a164e42b04f7"
     },
     "taruvi-database": {
       "source": "Taruvi-ai/taruvi-skills",
