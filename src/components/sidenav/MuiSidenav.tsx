@@ -222,9 +222,9 @@ export const MuiSidenav: React.FC<MuiSidenavProps> = ({ meta }) => {
             {dashboardButton}
 
             {/* Resource Menu Items */}
-            {menuItems.map((item) => (
+            {menuItems.map((item, index) => (
               <MenuItem
-                key={item.key || item.name}
+                key={`${item.key || item.route || item.name || "menu-item"}-${index}`}
                 item={item}
                 selectedKey={selectedKey || location.pathname}
                 expanded={expanded}

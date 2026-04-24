@@ -81,12 +81,16 @@ export const AppSettingsProvider: React.FC<PropsWithChildren> = ({
   const [settings, setSettings] = useState<AppSettings>(getDefaultSettings());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  useEffect(() => {console.log("Settings updated:", settings)}, [settings]);
   const fetchSettings = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
+      if (!taruviClient.tokenClient.isAuthenticated()) {
+        setSettings(getDefaultSettings());
+        return;
+      }
+
       const appSlug = __TARUVI_APP_SLUG__;
 
       if (!appSlug) {
@@ -96,7 +100,6 @@ export const AppSettingsProvider: React.FC<PropsWithChildren> = ({
       const response = await taruviClient.httpClient.get<AppSettingsAPIResponse>(
         `api/apps/${appSlug}/settings/`
       );
-      console.log("Fetched app settings:", response.data);
       if (response?.status === "success" && response?.data) {
         const apiData = response.data;
         

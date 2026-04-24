@@ -18,8 +18,7 @@ It includes:
 ### Organizer-side (Advanced setup)
 1. Sign up for GitHub Codespaces in Advanced.
 2. Create sites for each group based on color coding in Advanced.
-3. Create separate `auth.json` files for each group and share via your platform.
-4. Ensure participants accept their Taruvi Console invite.
+3. Ensure participants accept their Taruvi Console invite.
 
 ### Participant-side setup
 0. In Taruvi Console, create your app and collect:
@@ -29,8 +28,7 @@ It includes:
 1. Open this repo when the hackathon starts:
    - https://github.com/Taruvi-ai/taruvi-hacks-template
 2. Create a GitHub Codespace (first load is usually ~2.5 minutes).
-3. Copy your group `auth.json` into `.codex/auth.json` inside the workspace.
-4. Open `.env`, paste your `TARUVI_SITE_URL`, `TARUVI_APP_SLUG`, and `TARUVI_API_KEY`, then save.
+3. Open `.env`, paste your `TARUVI_SITE_URL`, `TARUVI_APP_SLUG`, and `TARUVI_API_KEY`, then save.
 
 ## Codespaces Behavior (Important)
 
@@ -51,9 +49,8 @@ If you change your Taruvi site, app slug, or API key later:
 
 ## Security Notes
 
-- `auth.json` is **required locally** but must **never be committed**.
-- `.codex/auth.json` and root `auth.json` are gitignored.
-- If an auth file was ever committed accidentally, rotate/revoke credentials.
+- `OPENAI_API_KEY` is injected via GitHub Codespaces secrets and must **never be committed** to the repository.
+- If a key was ever committed accidentally, rotate/revoke it immediately in the OpenAI dashboard.
 
 ## Local Commands
 

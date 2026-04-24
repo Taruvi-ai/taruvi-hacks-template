@@ -1,12 +1,5 @@
-import { AuthPage } from "@refinedev/mui";
+import { LoginRedirect } from "../../components/auth/LoginRedirect";
 
 export const Login = () => {
-  return (
-    <AuthPage
-      type="login"
-      formProps={{
-        defaultValues: { email: "demo@refine.dev", password: "demodemo" },
-      }}
-    />
-  );
+  return <LoginRedirect />;
 };
