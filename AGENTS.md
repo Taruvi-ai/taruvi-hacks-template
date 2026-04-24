@@ -199,6 +199,23 @@ const { result: category, query: { isLoading: categoryLoading } } = useOne({
 // blogPost and category are direct objects, no need for .data
 ```
 
+### Auth, Settings, and Input Safety
+
+- Taruvi auth is redirect-based. Keep `/login` wired to `LoginRedirect`; do not replace it with a local `AuthPage` form.
+- Keep protected Taruvi queries behind auth. App-wide settings/nav/theme fetches must skip protected API calls until a session token exists or live inside an authenticated route boundary.
+- For forms, normalize nullable API values before passing them to MUI inputs (`value={field.value ?? ""}`, boolean `checked`) to avoid uncontrolled/controlled warnings.
+
+### Stable Query Inputs
+
+When building lists, dashboards, or any data-driven page, keep query inputs stable across renders:
+
+- memoize `filters`, `sorters`, `meta`, and other query objects when they are derived in component scope
+- avoid inline `new Date()`, `Date.now()`, `Math.random()`, or freshly created arrays/objects inside hook arguments
+- if a cutoff time or default date range is needed, compute it once with `useMemo` or a top-level constant
+- if a query refetches repeatedly without user input, inspect the hook arguments first before blaming the provider
+
+This matters most for `useList`, `useDataGrid`, and `useMany`, because unstable arguments change the query key and can cause repeated datatable requests.
+
 ## Environment Configuration
 
 ```env

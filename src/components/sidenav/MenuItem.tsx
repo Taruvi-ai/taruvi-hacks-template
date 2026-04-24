@@ -111,9 +111,9 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       {hasChildren && (
         <Collapse in={open && expanded} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            {item.children.map((child) => (
+            {item.children.map((child, index) => (
               <MenuItem
-                key={child.key || child.name}
+                key={`${child.key || child.route || child.name || "menu-child"}-${depth + 1}-${index}`}
                 item={child}
                 selectedKey={selectedKey}
                 expanded={expanded}

@@ -123,6 +123,7 @@ For everything else — use provider hooks directly, no function needed.
 | Dashboards, KPI cards, charts, summaries | `taruvi-database` |
 | File upload, download, storage, attachments | `taruvi-storage` |
 | Multi-resource operations, backend logic, events, cron | `taruvi-functions` |
+| Creating/modifying and referencing tables, policies, roles, secrets, buckets | `taruvi-backend-provisioning` |
 
 **Most app-building tasks require 2+ skills.** For example:
 - "Build an employee list page" → `taruvi-refine-providers` + `taruvi-database`

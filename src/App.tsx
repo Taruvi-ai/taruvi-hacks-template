@@ -13,7 +13,7 @@ import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import GlobalStyles from "@mui/material/GlobalStyles";
 import routerProvider, { DocumentTitleHandler } from "@refinedev/react-router";
-import { BrowserRouter, Outlet, Route, Routes } from "react-router";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router";
 import { taruviClient } from "./taruviClient";
 import {
   taruviDataProvider,
@@ -29,6 +29,7 @@ import { ColorModeContextProvider, ColorModeContext } from "./contexts/color-mod
 import {AppSettingsProvider, useAppSettings} from "./contexts/app-settings";
 import { useContext, useRef, useEffect } from "react";
 import { Home } from "./pages/home";
+import { Login } from "./pages/login";
 
 const AppContent = () => {
   const { setMode } = useContext(ColorModeContext);
@@ -82,6 +83,18 @@ const AppContent = () => {
                 }}
               >
                 <Routes>
+                  <Route
+                    element={
+                      <Authenticated
+                        key="login-route"
+                        fallback={<Outlet />}
+                      >
+                        <Navigate to="/" replace />
+                      </Authenticated>
+                    }
+                  >
+                    <Route path="/login" element={<Login />} />
+                  </Route>
                   <Route
                     element={
                       <Authenticated

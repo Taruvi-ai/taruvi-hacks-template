@@ -1,0 +1,18 @@
+[
+  { "query": "create a datatable called orders with id, customer_id, total, status", "should_trigger": true },
+  { "query": "add a Cerbos policy for the posts table that lets authors edit their own posts", "should_trigger": true },
+  { "query": "I need to create a new role called 'editor' and assign it to alice", "should_trigger": true },
+  { "query": "provision a private storage bucket called user-avatars with a 2MB size limit", "should_trigger": true },
+  { "query": "register a serverless function called send-welcome-email — metadata only, not the body", "should_trigger": true },
+  { "query": "create a new secret type for stripe credentials with a validated schema", "should_trigger": true },
+  { "query": "drop the stale datatable called temp_migration_data", "should_trigger": true },
+  { "query": "run a raw SQL UPDATE to fix the timezone field on old rows", "should_trigger": true },
+  { "query": "add an analytics query for daily revenue", "should_trigger": true },
+  { "query": "write the Python code for the send-welcome-email function", "should_trigger": false },
+  { "query": "build a Refine list page for the orders datatable", "should_trigger": false },
+  { "query": "how do I call this function from the frontend with useCustom", "should_trigger": false },
+  { "query": "add a useCan check to gate the delete button", "should_trigger": false },
+  { "query": "I need a Refine resource with useDataGrid", "should_trigger": false },
+  { "query": "set up the auth provider in the React app", "should_trigger": false },
+  { "query": "write a Postgres trigger for last_updated", "should_trigger": false }
+]

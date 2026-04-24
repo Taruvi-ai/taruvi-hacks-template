@@ -91,11 +91,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           />
 
           {/* Visible menu items */}
-          {visibleItems.map((item) => {
+          {visibleItems.map((item, index) => {
             const route = item.route || item.key || "";
             return (
               <CanAccess
-                key={item.key || item.name}
+                key={`visible-${item.key || item.route || item.name || "menu-item"}-${index}`}
                 resource={getAclResource(item)}
                 action="list"
                 params={{ resource: item }}
@@ -136,9 +136,9 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           horizontal: "center",
         }}
       >
-        {moreItems.map((item) => (
+        {moreItems.map((item, index) => (
           <CanAccess
-            key={item.key || item.name}
+            key={`more-${item.key || item.route || item.name || "menu-item"}-${index}`}
             resource={getAclResource(item)}
             action="list"
             params={{ resource: item }}
