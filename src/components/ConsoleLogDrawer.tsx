@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { useNotification } from "@refinedev/core";
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -7,11 +8,18 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
+import Snackbar from "@mui/material/Snackbar";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
 import { getLastBoundaryAt, getSnapshot, subscribe, type LogEntry } from "../utils/clientLogger";
+
+type SnackbarState = {
+  type: "error" | "success";
+  message: string;
+  description: string;
+};
 
 const BOUNDARY_SUPPRESS_WINDOW_MS = 1500;
 
@@ -28,9 +36,9 @@ const copyText = async (text: string) => {
 };
 
 export const ConsoleLogDrawer = () => {
-  const { open } = useNotification();
   const entries = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
   const [isOpen, setIsOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
   const previousCountRef = useRef(0);
 
   useEffect(() => {
@@ -41,44 +49,38 @@ export const ConsoleLogDrawer = () => {
         Date.now() - getLastBoundaryAt() < BOUNDARY_SUPPRESS_WINDOW_MS;
       if (!boundaryActive) {
         setIsOpen(true);
+        setSnackbar({
+          type: "error",
+          message: "Application error detected",
+          description: latestEntry ? latestEntry.text.slice(0, 160) : "Open the error panel for details.",
+        });
       }
     }
     previousCountRef.current = entries.length;
-  }, [entries, open]);
+  }, [entries]);
 
   const latestEntry = useMemo(() => entries[entries.length - 1] ?? null, [entries]);
 
   const handleCopyVisible = async () => {
     const text = latestEntry ? formatEntry(latestEntry) : "";
     if (!text) {
-      open?.({
-        type: "error",
-        message: "No error to copy",
-        description: "There is no captured error yet.",
-      });
+      setSnackbar({ type: "error", message: "No error to copy", description: "There is no captured error yet." });
       return;
     }
     try {
       await copyText(text);
-      open?.({
-        type: "success",
-        message: "Error copied",
-        description: "The latest error is in your clipboard.",
-      });
+      setSnackbar({ type: "success", message: "Error copied", description: "The latest error is in your clipboard." });
     } catch (error) {
-      open?.({
-        type: "error",
-        message: "Copy failed",
-        description: error instanceof Error ? error.message : String(error),
-      });
+      setSnackbar({ type: "error", message: "Copy failed", description: error instanceof Error ? error.message : String(error) });
     }
   };
 
-  if (entries.length === 0 && !isOpen) {
+  if (entries.length === 0 && !isOpen && !snackbar) {
     return null;
   }
 
   return (
+    <>
     <Dialog
       open={isOpen}
       onClose={() => setIsOpen(false)}
@@ -132,5 +134,18 @@ export const ConsoleLogDrawer = () => {
         </Button>
       </DialogActions>
     </Dialog>
+
+    <Snackbar
+      open={!!snackbar}
+      autoHideDuration={4000}
+      onClose={() => setSnackbar(null)}
+      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+    >
+      <Alert severity={snackbar?.type ?? "error"} onClose={() => setSnackbar(null)} sx={{ width: "100%" }}>
+        <AlertTitle>{snackbar?.message}</AlertTitle>
+        {snackbar?.description}
+      </Alert>
+    </Snackbar>
+    </>
   );
 };
