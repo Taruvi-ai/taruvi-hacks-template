@@ -19,6 +19,36 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    <script>
+      (function () {
+        function showFatalOverlay(message) {
+          if (document.getElementById("__tv-fatal-overlay")) return;
+          var el = document.createElement("div");
+          el.id = "__tv-fatal-overlay";
+          el.style.cssText = [
+            "position:fixed", "inset:0", "z-index:999999",
+            "display:flex", "align-items:center", "justify-content:center",
+            "background:rgba(0,0,0,0.85)"
+          ].join(";");
+          el.innerHTML =
+            '<div style="background:#fff;border-radius:8px;padding:32px;max-width:600px;width:90%;font-family:monospace">' +
+            '<h2 style="margin:0 0 12px;color:#c62828;font-size:16px">Fatal error before app loaded</h2>' +
+            '<pre style="white-space:pre-wrap;word-break:break-word;font-size:13px;color:#333;margin:0">' +
+            message.replace(/</g, "&lt;") +
+            "</pre></div>";
+          document.body.appendChild(el);
+        }
+
+        window.addEventListener("error", function (e) {
+          showFatalOverlay(e.message + (e.filename ? "\n\nat " + e.filename + ":" + e.lineno : ""));
+        });
+
+        window.addEventListener("unhandledrejection", function (e) {
+          var msg = e.reason instanceof Error ? (e.reason.stack || e.reason.message) : String(e.reason);
+          showFatalOverlay(msg);
+        });
+      })();
+    </script>
     <script type="module" src="/src/index.tsx"></script>
     <!--
       This HTML file is a template.
