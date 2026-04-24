@@ -249,7 +249,7 @@ const flush = (viaBeacon: boolean): void => {
       },
       body,
       keepalive: true,
-      credentials: "omit",
+      credentials: "same-origin",
     }).catch(() => {
       /* dev server might be restarting; drop the batch silently */
     });

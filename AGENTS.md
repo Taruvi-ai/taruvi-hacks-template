@@ -199,6 +199,12 @@ const { result: category, query: { isLoading: categoryLoading } } = useOne({
 // blogPost and category are direct objects, no need for .data
 ```
 
+### Auth, Settings, and Input Safety
+
+- Taruvi auth is redirect-based. Keep `/login` wired to `LoginRedirect`; do not replace it with a local `AuthPage` form.
+- Keep protected Taruvi queries behind auth. App-wide settings/nav/theme fetches must skip protected API calls until a session token exists or live inside an authenticated route boundary.
+- For forms, normalize nullable API values before passing them to MUI inputs (`value={field.value ?? ""}`, boolean `checked`) to avoid uncontrolled/controlled warnings.
+
 ## Environment Configuration
 
 ```env
