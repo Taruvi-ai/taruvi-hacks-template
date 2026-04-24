@@ -41,11 +41,6 @@ export const ConsoleLogDrawer = () => {
         Date.now() - getLastBoundaryAt() < BOUNDARY_SUPPRESS_WINDOW_MS;
       if (!boundaryActive) {
         setIsOpen(true);
-        open?.({
-          type: "error",
-          message: "Application error detected",
-          description: latestEntry ? latestEntry.text.slice(0, 160) : "Open the error panel for details.",
-        });
       }
     }
     previousCountRef.current = entries.length;
