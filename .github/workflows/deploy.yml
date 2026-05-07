@@ -20,6 +20,10 @@ name: Deploy to Taruvi
 on:
   pull_request:
     types: [closed]
+    branches:
+      - main
+      - dev
+      - 'feature/**'
 
 env:
   NODE_VERSION: '20'
@@ -178,96 +182,16 @@ jobs:
           echo "ZIP file size: $ZIP_SIZE"
           echo "::notice::Created dist.zip ($ZIP_SIZE)"
 
-      - name: Deploy to Taruvi Frontend Worker
+      - name: Deploy to Taruvi
         id: deploy
-        run: |
-          APP_SLUG="${{ steps.app_slug.outputs.app_slug }}"
-          SITE_URL="${{ steps.config.outputs.site_url }}"
-          API_KEY="${{ steps.config.outputs.api_key }}"
-          
-          echo "Deploying to: $SITE_URL"
-          echo "App slug: $APP_SLUG"
-          
-          # Get default frontend worker slug from app settings
-          echo "Checking for default frontend worker..."
-          SETTINGS_RESPONSE=$(curl -s \
-            "${SITE_URL}/api/apps/${APP_SLUG}/settings/" \
-            -H "Authorization: Api-Key ${API_KEY}" \
-            --connect-timeout 30) || true
-          
-          WORKER_SLUG=$(echo "$SETTINGS_RESPONSE" | jq -r '.data.default_frontend_worker_slug // empty')
-          
-          if [[ -n "$WORKER_SLUG" && "$WORKER_SLUG" != "null" ]]; then
-            # Worker exists - Update it
-            echo "Found default worker: $WORKER_SLUG"
-            echo "Uploading new build..."
-            
-            RESPONSE=$(curl -s -w "\n%{http_code}" \
-              -X PATCH "${SITE_URL}/api/cloud/frontend_workers/${WORKER_SLUG}/" \
-              -H "Authorization: Api-Key ${API_KEY}" \
-              -F "file=@dist.zip;type=application/zip" \
-              --connect-timeout 30 \
-              --max-time 300) || CURL_EXIT=$?
-            
-            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-            BODY=$(echo "$RESPONSE" | sed '$d')
-            
-            if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
-              # Get the new build UUID and set it as active
-              BUILD_UUID=$(echo "$BODY" | jq -r '.data.latest_build.uuid // empty')
-              
-              if [[ -n "$BUILD_UUID" && "$BUILD_UUID" != "null" ]]; then
-                echo "Setting build $BUILD_UUID as active..."
-                curl -s -X PATCH "${SITE_URL}/api/cloud/frontend_workers/${WORKER_SLUG}/set-active-build/" \
-                  -H "Authorization: Api-Key ${API_KEY}" \
-                  -H "Content-Type: application/json" \
-                  -d "{\"build_uuid\": \"${BUILD_UUID}\"}" \
-                  --connect-timeout 30 || true
-              fi
-              
-              echo "::notice::Deployment successful! (updated existing worker)"
-              echo "worker_slug=$WORKER_SLUG" >> "$GITHUB_OUTPUT"
-              echo "deploy_type=update" >> "$GITHUB_OUTPUT"
-            else
-              echo "::error::Failed to update worker (HTTP $HTTP_CODE)"
-              echo "$BODY"
-              exit 1
-            fi
-          else
-            # No default worker - Create new one with branch suffix
-            echo "No default frontend worker. Creating new worker..."
-            
-            # Normalize branch name for subdomain (lowercase, alphanumeric and hyphens only)
-            TARGET_BRANCH="${{ steps.config.outputs.target_branch }}"
-            BRANCH_SUFFIX=$(echo "$TARGET_BRANCH" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')
-            SUBDOMAIN="${APP_SLUG}-${BRANCH_SUFFIX}"
-            
-            echo "Subdomain: $SUBDOMAIN"
-            
-            RESPONSE=$(curl -s -w "\n%{http_code}" \
-              -X POST "${SITE_URL}/api/cloud/frontend_workers/" \
-              -H "Authorization: Api-Key ${API_KEY}" \
-              -F "file=@dist.zip;type=application/zip" \
-              -F "name=${APP_SLUG}" \
-              -F "subdomain_input=${SUBDOMAIN}" \
-              -F "is_internal=true" \
-              --connect-timeout 30 \
-              --max-time 300) || CURL_EXIT=$?
-            
-            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-            BODY=$(echo "$RESPONSE" | sed '$d')
-            
-            if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
-              NEW_WORKER_SLUG=$(echo "$BODY" | jq -r '.data.slug // empty')
-              echo "::notice::Deployment successful! (created new worker: $NEW_WORKER_SLUG)"
-              echo "worker_slug=$NEW_WORKER_SLUG" >> "$GITHUB_OUTPUT"
-              echo "deploy_type=create" >> "$GITHUB_OUTPUT"
-            else
-              echo "::error::Failed to create worker (HTTP $HTTP_CODE)"
-              echo "$BODY"
-              exit 1
-            fi
-          fi
+        uses: Taruvi-ai/taruvi-action@v1
+        with:
+          site-url: ${{ steps.config.outputs.site_url }}
+          api-key: ${{ steps.config.outputs.api_key }}
+          app-slug: ${{ steps.app_slug.outputs.app_slug }}
+          frontend-zip-path: dist.zip
+          backend-dir: .taruvi-backend
+          branch-name: ${{ steps.config.outputs.target_branch }}
 
       - name: Deployment Summary
         if: success()
@@ -280,8 +204,10 @@ jobs:
           echo "| **Source Branch** | ${{ github.event.pull_request.head.ref }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Target Branch** | ${{ steps.config.outputs.target_branch }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **App Slug** | ${{ steps.app_slug.outputs.app_slug }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Worker Slug** | ${{ steps.deploy.outputs.worker_slug }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Deploy Type** | ${{ steps.deploy.outputs.deploy_type }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Worker Slug** | ${{ steps.deploy.outputs.worker-slug }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Deploy Type** | ${{ steps.deploy.outputs.deploy-type }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Frontend URL** | ${{ steps.deploy.outputs.frontend-url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Backend Import** | ${{ steps.deploy.outputs.backend-imported }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Commit** | ${{ github.event.pull_request.merge_commit_sha }} |" >> $GITHUB_STEP_SUMMARY
 
       - name: Failure Summary
