@@ -13,24 +13,23 @@ import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import GlobalStyles from "@mui/material/GlobalStyles";
 import routerProvider, { DocumentTitleHandler } from "@refinedev/react-router";
-import { BrowserRouter, Outlet, Route, Routes } from "react-router";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router";
 import { taruviClient } from "./taruviClient";
 import {
   taruviDataProvider,
   taruviAuthProvider,
   taruviStorageProvider,
-  taruviFunctionsProvider,
   taruviAppProvider,
   taruviUserProvider,
-  taruviAnalyticsProvider,
   // taruviAccessControlProvider, // Uncomment to enable Cerbos-based access control
 } from "./providers/refineProviders";
-import { CustomSider, UnsavedChangesDialog } from "./components";
+import { CustomSider, ErrorBoundary, UnsavedChangesDialog } from "./components";
 import { LoginRedirect } from "./components/auth/LoginRedirect";
 import { ColorModeContextProvider, ColorModeContext } from "./contexts/color-mode";
 import {AppSettingsProvider, useAppSettings} from "./contexts/app-settings";
 import { useContext, useRef, useEffect } from "react";
 import { Home } from "./pages/home";
+import { Login } from "./pages/login";
 
 const AppContent = () => {
   const { setMode } = useContext(ColorModeContext);
@@ -67,10 +66,8 @@ const AppContent = () => {
                 dataProvider={{
                   default: taruviDataProvider,
                   storage: taruviStorageProvider,
-                  functions: taruviFunctionsProvider,
                   app: taruviAppProvider,
                   user: taruviUserProvider,
-                  analytics: taruviAnalyticsProvider,
                 }}
                 notificationProvider={useNotificationProvider}
                 routerProvider={routerProvider}
@@ -89,12 +86,26 @@ const AppContent = () => {
                   <Route
                     element={
                       <Authenticated
+                        key="login-route"
+                        fallback={<Outlet />}
+                      >
+                        <Navigate to="/" replace />
+                      </Authenticated>
+                    }
+                  >
+                    <Route path="/login" element={<Login />} />
+                  </Route>
+                  <Route
+                    element={
+                      <Authenticated
                         key="authenticated-inner"
                         fallback={<LoginRedirect />}
                       >
                         <ThemedLayout Header={() => null} Sider={CustomSider} initialSiderCollapsed={true}>
                           <Box sx={{ ml: { xs: 0, md: '72px' }, transition: 'margin-left 0.2s ease-in-out' }}>
-                            <Outlet />
+                            <ErrorBoundary>
+                              <Outlet />
+                            </ErrorBoundary>
                           </Box>
                         </ThemedLayout>
                       </Authenticated>
@@ -123,7 +134,23 @@ function App() {
         <ColorModeContextProvider>
           <AppSettingsProvider>
             <CssBaseline />
-            <GlobalStyles styles={{ html: { WebkitFontSmoothing: "auto" } }} />
+            <GlobalStyles
+              styles={{
+                html: { WebkitFontSmoothing: 'antialiased' },
+                body: { fontFamily: "'Open Sans', sans-serif" },
+                'h1, h2, h3, h4, h5, h6': { fontFamily: "'Quicksand', sans-serif" },
+                '*::-webkit-scrollbar': { width: 8, height: 8 },
+                '*::-webkit-scrollbar-track': { background: 'transparent' },
+                '*::-webkit-scrollbar-thumb': {
+                  background: 'rgba(0,0,0,0.18)',
+                  borderRadius: 8,
+                },
+                '*::-webkit-scrollbar-thumb:hover': { background: 'rgba(0,0,0,0.32)' },
+                '[data-theme="dark"] *::-webkit-scrollbar-thumb': {
+                  background: 'rgba(255,255,255,0.18)',
+                },
+              }}
+            />
             <AppContent />
           </AppSettingsProvider>
         </ColorModeContextProvider>

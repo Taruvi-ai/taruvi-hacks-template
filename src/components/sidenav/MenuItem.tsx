@@ -8,6 +8,7 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import ListOutlined from "@mui/icons-material/ListOutlined";
 import { CanAccess, type TreeMenuItem } from "@refinedev/core";
+import { getAclResource } from "../../utils/aclResource";
 
 const MAX_LABEL_EXPANDED = 40;
 const MAX_LABEL_COLLAPSED = 10;
@@ -102,17 +103,17 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   return (
     <CanAccess
-      resource={item.name}
-      action="list"
+      resource={getAclResource(item)}
+      action="read"
       params={{ resource: item }}
     >
       {wrappedButton}
       {hasChildren && (
         <Collapse in={open && expanded} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            {item.children.map((child) => (
+            {item.children.map((child, index) => (
               <MenuItem
-                key={child.key || child.name}
+                key={`${child.key || child.route || child.name || "menu-child"}-${depth + 1}-${index}`}
                 item={child}
                 selectedKey={selectedKey}
                 expanded={expanded}

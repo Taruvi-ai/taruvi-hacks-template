@@ -1,5 +1,176 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
+import type { Plugin } from "vite";
+import fs from "node:fs";
+import path from "node:path";
+
+const CLIENT_LOG_ENDPOINT = "/__client_log";
+const CLIENT_LOG_FILE = path.resolve(process.cwd(), "logs/frontend.ndjson");
+const MAX_BODY_BYTES = 2 * 1024 * 1024;
+
+const REDACT_KEYS = new Set([
+  "token",
+  "access_token",
+  "refresh_token",
+  "id_token",
+  "authorization",
+  "auth",
+  "password",
+  "passwd",
+  "pwd",
+  "api_key",
+  "apikey",
+  "secret",
+  "client_secret",
+  "cookie",
+  "set-cookie",
+  "session",
+  "sessionid",
+]);
+
+const redactSensitive = (value: unknown, seen = new WeakSet<object>()): unknown => {
+  if (Array.isArray(value)) {
+    return value.map((item) => redactSensitive(item, seen));
+  }
+  if (value && typeof value === "object") {
+    if (seen.has(value as object)) return "[Circular]";
+    seen.add(value as object);
+    const input = value as Record<string, unknown>;
+    const output: Record<string, unknown> = {};
+    for (const [key, keyValue] of Object.entries(input)) {
+      if (REDACT_KEYS.has(key.toLowerCase())) {
+        output[key] = "[REDACTED]";
+      } else if (key.toLowerCase() === "url" && typeof keyValue === "string") {
+        output[key] = redactUrl(keyValue);
+      } else {
+        output[key] = redactSensitive(keyValue, seen);
+      }
+    }
+    return output;
+  }
+  return value;
+};
+
+const redactUrl = (url: string): string => {
+  try {
+    const parsed = new URL(url, "http://localhost");
+    let touched = false;
+    parsed.searchParams.forEach((_, key) => {
+      if (REDACT_KEYS.has(key.toLowerCase())) {
+        parsed.searchParams.set(key, "[REDACTED]");
+        touched = true;
+      }
+    });
+    return touched ? parsed.toString() : url;
+  } catch {
+    return url;
+  }
+};
+
+const createClientLogPlugin = (): Plugin => ({
+  name: "taruvi:client-log",
+  apply: "serve",
+  configureServer(server) {
+    server.middlewares.use((req, res, next) => {
+      const reqPath = req.url?.split("?")[0];
+      if (reqPath !== CLIENT_LOG_ENDPOINT) {
+        next();
+        return;
+      }
+
+      if (req.method !== "POST") {
+        res.statusCode = 405;
+        res.setHeader("Allow", "POST");
+        res.end("Method Not Allowed");
+        return;
+      }
+
+      const chunks: Buffer[] = [];
+      let totalBytes = 0;
+      let aborted = false;
+
+      req.on("data", (chunk: Buffer) => {
+        if (aborted) return;
+        totalBytes += chunk.length;
+        if (totalBytes > MAX_BODY_BYTES) {
+          aborted = true;
+          res.statusCode = 413;
+          res.end("Payload Too Large");
+          req.destroy();
+          return;
+        }
+        chunks.push(chunk);
+      });
+
+      req.on("error", () => {
+        if (aborted) return;
+        aborted = true;
+        try {
+          res.statusCode = 400;
+          res.end("Request Error");
+        } catch {
+          /* noop */
+        }
+      });
+
+      req.on("end", () => {
+        if (aborted) return;
+        try {
+          const body = Buffer.concat(chunks).toString("utf8");
+          if (!body.trim()) {
+            res.statusCode = 204;
+            res.end();
+            return;
+          }
+
+          let parsed: unknown;
+          try {
+            parsed = JSON.parse(body);
+          } catch {
+            res.statusCode = 400;
+            res.end("Invalid JSON");
+            return;
+          }
+
+          const records = Array.isArray(parsed) ? parsed : [parsed];
+          const receivedAt = new Date().toISOString();
+
+          const lines = records
+            .filter((record): record is Record<string, unknown> => !!record && typeof record === "object")
+            .map((record) => {
+              const safe = redactSensitive(record) as Record<string, unknown>;
+              return JSON.stringify({ ...safe, server_received_at: receivedAt });
+            })
+            .join("\n");
+
+          if (lines) {
+            try {
+              fs.mkdirSync(path.dirname(CLIENT_LOG_FILE), { recursive: true });
+              fs.appendFileSync(CLIENT_LOG_FILE, `${lines}\n`, "utf8");
+            } catch (writeErr) {
+              server.config.logger.warn(
+                `[taruvi:client-log] failed to write log: ${(writeErr as Error).message}`,
+              );
+            }
+          }
+
+          res.statusCode = 204;
+          res.end();
+        } catch (err) {
+          server.config.logger.warn(
+            `[taruvi:client-log] handler error: ${(err as Error).message}`,
+          );
+          try {
+            res.statusCode = 500;
+            res.end("Log handler error");
+          } catch {
+            /* noop */
+          }
+        }
+      });
+    });
+  },
+});
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
@@ -11,7 +182,7 @@ export default defineConfig(({ mode }) => {
       __TARUVI_API_KEY__: JSON.stringify(env.TARUVI_API_KEY ?? ""),
       __TARUVI_APP_TITLE__: JSON.stringify(env.TARUVI_APP_TITLE ?? ""),
     },
-    plugins: [react()],
+    plugins: [react(), createClientLogPlugin()],
     optimizeDeps: {
       include: [
         "@emotion/react",

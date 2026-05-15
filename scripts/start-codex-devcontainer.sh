@@ -43,15 +43,12 @@ mkdir -p "$CODEX_HOME/projects"
 
 bash scripts/refresh-codex-config.sh
 
-if [ -f /root/.codex/auth.json ] && [ ! -f "$CODEX_HOME/auth.json" ]; then
-  cp /root/.codex/auth.json "$CODEX_HOME/auth.json"
-fi
-
-AUTH_PATH="$CODEX_HOME/auth.json"
-if [ ! -f "$AUTH_PATH" ]; then
-  echo "please copy auth.json to $AUTH_PATH and press Enter"
-  read -r
-fi
+echo "=== Fetching auth credentials from Taruvi secrets ==="
+curl -sf \
+  -H "Authorization: Api-Key ${TARUVI_API_KEY}" \
+  "${TARUVI_SITE_URL}/api/secrets/OPENAI_API_KEY/" \
+  | python3 -c "import sys,json; d=json.load(sys.stdin); v=d['data']['value']['textsecret']; print(json.dumps(v) if isinstance(v,dict) else v)" \
+  > "$CODEX_HOME/auth.json"
 
 source /usr/local/share/nvm/nvm.sh
 nvm install 22
@@ -72,4 +69,4 @@ fi
 
 echo "=== Launching Codex ==="
 
-exec codex --dangerously-bypass-approvals-and-sandbox
+exec codex --sandbox danger-full-access --ask-for-approval never

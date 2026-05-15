@@ -1,0 +1,18 @@
+[
+  { "query": "build me an employee directory app", "should_trigger": true },
+  { "query": "the delete cascade isn't working, attachments are left behind", "should_trigger": true },
+  { "query": "I want to add a new feature to the app — a notifications page", "should_trigger": true },
+  { "query": "help me refactor the provider code, it's getting messy", "should_trigger": true },
+  { "query": "the dashboard is slow, I think we're making too many API calls", "should_trigger": true },
+  { "query": "I need to add file uploads to the project detail page", "should_trigger": true },
+  { "query": "the backend function keeps timing out on large imports", "should_trigger": true },
+  { "query": "set up the app from scratch, I have the API key and app slug ready", "should_trigger": true },
+  { "query": "write a fibonacci function in Python", "should_trigger": false },
+  { "query": "help me set up a Next.js app with Prisma", "should_trigger": false },
+  { "query": "how do I configure nginx as a reverse proxy", "should_trigger": false },
+  { "query": "explain the difference between REST and GraphQL", "should_trigger": false },
+  { "query": "write unit tests for my React components using Jest", "should_trigger": false },
+  { "query": "configure CI/CD with GitHub Actions for my Node app", "should_trigger": false },
+  { "query": "help me set up Docker for my Python microservice", "should_trigger": false },
+  { "query": "what's the best way to handle state management in React", "should_trigger": false }
+]

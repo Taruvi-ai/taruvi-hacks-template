@@ -1,0 +1,18 @@
+[
+  { "query": "build a dashboard page with KPI cards showing order counts by status", "should_trigger": true },
+  { "query": "the summary page is slow, it makes a separate API call for each status count", "should_trigger": true },
+  { "query": "I need a filtered, sortable, paginated list of employees", "should_trigger": true },
+  { "query": "show me how to use groupBy and aggregate for a summary chart", "should_trigger": true },
+  { "query": "I need to query related data across two tables using graph relationships", "should_trigger": true },
+  { "query": "my list page is timing out, the table has 50k rows and no pagination", "should_trigger": true },
+  { "query": "build a detail page that shows an order and its line items", "should_trigger": true },
+  { "query": "I only want to show teams with more than 5 members in the chart", "should_trigger": true },
+  { "query": "I need to upload profile photos to a bucket", "should_trigger": false },
+  { "query": "write a backend function that sends emails when orders are created", "should_trigger": false },
+  { "query": "set up the auth provider and login flow", "should_trigger": false },
+  { "query": "I need to manage user roles and permissions", "should_trigger": false },
+  { "query": "help me write SQL queries for my PostgreSQL database", "should_trigger": false },
+  { "query": "set up a MongoDB collection with Mongoose schemas", "should_trigger": false },
+  { "query": "configure a Redis cache for my API responses", "should_trigger": false },
+  { "query": "build a file manager with drag-and-drop upload", "should_trigger": false }
+]

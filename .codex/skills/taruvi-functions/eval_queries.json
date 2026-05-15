@@ -1,0 +1,18 @@
+[
+  { "query": "when a user is created I need to also create their profile record and send a welcome email", "should_trigger": true },
+  { "query": "write a cron job that generates a weekly revenue report every Monday at 8am", "should_trigger": true },
+  { "query": "when an order is marked paid, update inventory and notify the warehouse", "should_trigger": true },
+  { "query": "I need a webhook endpoint that receives payment events from Stripe", "should_trigger": true },
+  { "query": "the cleanup after deleting tasks is unreliable, sometimes attachments are left behind", "should_trigger": true },
+  { "query": "I need to call an external API using a secret stored in the platform", "should_trigger": true },
+  { "query": "this data import takes 2 minutes and the browser freezes, can we run it in the background", "should_trigger": true },
+  { "query": "there's a chain of create calls in the React component that should really be atomic on the server", "should_trigger": true },
+  { "query": "build me a simple CRUD table for orders with filters and sorting", "should_trigger": false },
+  { "query": "I need to upload profile photos to a bucket", "should_trigger": false },
+  { "query": "set up the auth provider and access control in the frontend", "should_trigger": false },
+  { "query": "build a dashboard with KPI cards showing counts by status", "should_trigger": false },
+  { "query": "write a Python script to parse CSV files on my local machine", "should_trigger": false },
+  { "query": "help me configure AWS Lambda functions", "should_trigger": false },
+  { "query": "add login and logout buttons to the app", "should_trigger": false },
+  { "query": "how do I download a file and display it in the browser", "should_trigger": false }
+]

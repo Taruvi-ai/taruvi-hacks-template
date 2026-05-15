@@ -1,4 +1,0 @@
-interface:
-  display_name: "Taruvi Frontend Deploy"
-  short_description: "Build, zip, and deploy Taruvi frontend workers"
-  default_prompt: "Use $taruvi-frontend-worker-deploy to build this app, package dist, and deploy it to Taruvi Frontend Workers."
