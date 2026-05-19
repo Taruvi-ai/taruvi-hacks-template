@@ -60,6 +60,12 @@ For any task that **renders, styles, or restyles UI** — new pages, layouts, fo
 3. Prefer plain MUI components (`<Button>`, `<Chip>`, `<Card>`, `<TextField>`, `<Alert>`, `<Table*>`, `<ListItemButton>`, `<Breadcrumbs>`, `<Tabs>`, `<Dialog>`, …) — the theme already applies every spec'd size, weight, radius, padding, shadow, and color via component overrides. Do not reimplement these styles with `sx` or custom CSS.
 4. For things the theme cannot enforce (page-level layout, form-row grid, hero gradient, status chip mapping to MUI color slots, "ON HOLD" / "TO DO" chips, chart colors via Recharts, icon conventions, avatar sizing) — follow the snippets in `UI_Guidelines.md`.
 5. Use **`*Rounded`** icon variants from `@mui/icons-material` (e.g., `EditRoundedIcon`, `AddRoundedIcon`) — the design system uses Material Icons Rounded, not the filled defaults.
+6. **Page anatomy is mandatory**, not optional decoration. For any Refine page (list, show, create/edit, dashboard), the visual contract lives in [`UI_Guidelines.md`](UI_Guidelines.md) and the **implementation lives in the `taruvi-refine-providers` skill — read both before writing the page**, not just the styling layer. In particular:
+   - **Every list page MUST ship with a search input, at least one filter control, an active-filter chip row, server-side pagination, and the four distinct empty-state variants** (no data yet / no results / no matching items / unable to load) — see [`§4.6`](UI_Guidelines.md) + [`§4.7`](UI_Guidelines.md), plus the skill's "DataGrid checklist" + `database-provider.md` for the wiring.
+   - **Every destructive action (delete, archive, bulk-delete, …) MUST go through a confirmation dialog** matching [`§4.8`](UI_Guidelines.md) — title is a question, body names the specific item or count and states "This action cannot be undone", primary CTA is `color="error"` with the verb (not "OK"). Wiring `useDelete` directly to a delete icon click is a bug.
+   - Filters and search push into Refine's server-side `filters[]`, never into component state filtered in React.
+
+   If you can't show that you read the skill section relevant to the page type you're building, you aren't ready to write it.
 
 If `UI_Guidelines.md` or `themeOptions.ts` is missing, stop and tell the user — do not implement design from memory.
 

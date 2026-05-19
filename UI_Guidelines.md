@@ -176,16 +176,223 @@ Pair with `cover-title` typography: **Quicksand 300, 58px, line-height 1.15, let
 </Box>
 ```
 
-### 4.6 Empty state
+### 4.6 Empty states — four variants
+
+The design system specifies **four distinct empty states**. Picking the right one is part of the contract — a generic "no data" placeholder for a search miss is incomplete.
+
+| Variant | Trigger | Icon | CTA | Mood |
+|---|---|---|---|---|
+| **No data yet** | Resource has 0 rows total (first run, never used) | resource icon (`FolderOpenRounded`, etc.) | **Primary** "+ Create …" | Inviting |
+| **No results found** | Search returned 0 rows | `SearchOffRounded` (or `SearchRounded` muted) | **Secondary outlined** "Clear search" | Helpful |
+| **No matching items** | Filters returned 0 rows | `FilterListRounded` (muted) | **Secondary outlined** "Clear all filters" | Helpful |
+| **Unable to load data** | API error / network failure | `ErrorRounded` (**error color**) | **Primary** "Try again" | Recoverable |
+
+**Picking the right one** (decision tree):
+
+```text
+totalCount === 0
+└─ filters.length === 0 && !search  →  No data yet
+└─ filters.length > 0 || search     →  No matching items / No results found
+   ├─ search active               →  No results found
+   └─ only filters active         →  No matching items
+
+isError                              →  Unable to load data
+```
+
+**Shared anatomy** (all four):
 
 ```tsx
 <Box sx={{ textAlign: 'center', py: 5, px: 2.5, color: 'text.disabled' }}>
-  <Icon sx={{ fontSize: 48, mb: 1.5, display: 'block', mx: 'auto' }}>folder_open</Icon>
-  <Typography variant="h5" sx={{ color: 'text.secondary', mb: 0.75 }}>No projects yet</Typography>
-  <Typography variant="body2" sx={{ mb: 2 }}>Get started by creating your first project</Typography>
-  <Button variant="contained">Create project</Button>
+  <Icon sx={{ fontSize: 48, mb: 1.5, display: 'block', mx: 'auto', color: 'inherit' }}>
+    {/* variant icon */}
+  </Icon>
+  <Typography variant="h5" sx={{ color: 'text.secondary', mb: 0.75 }}>
+    {/* variant heading */}
+  </Typography>
+  <Typography variant="body2" sx={{ mb: 2 }}>
+    {/* variant body */}
+  </Typography>
+  {/* variant CTA */}
 </Box>
 ```
+
+**Per-variant fills:**
+
+```tsx
+// 1. No data yet
+<FolderOpenRoundedIcon … />
+<Typography variant="h5">No projects yet</Typography>
+<Typography variant="body2">Get started by creating your first project</Typography>
+<Button variant="contained" startIcon={<AddRoundedIcon />}>Create project</Button>
+
+// 2. No results found
+<SearchOffRoundedIcon … />
+<Typography variant="h5">No results found</Typography>
+<Typography variant="body2">Try adjusting your search or filter to find what you're looking for</Typography>
+<Button variant="outlined" onClick={clearSearch}>Clear search</Button>
+
+// 3. No matching items
+<FilterListRoundedIcon … />
+<Typography variant="h5">No matching items</Typography>
+<Typography variant="body2">No items match the current filters</Typography>
+<Button variant="outlined" onClick={clearFilters}>Clear all filters</Button>
+
+// 4. Unable to load data
+<ErrorRoundedIcon sx={{ color: 'error.main', fontSize: 48, mb: 1.5 }} />
+<Typography variant="h5">Unable to load data</Typography>
+<Typography variant="body2">There was a problem loading your data</Typography>
+<Button variant="contained" onClick={retry}>Try again</Button>
+```
+
+**Anti-pattern:**
+
+```tsx
+// ❌ Generic "No data" for every situation — agents do this constantly
+<Typography>No data</Typography>
+```
+
+A "no results from search" miss followed by a "+ Create" button is wrong — the user already has data, they just can't see it.
+
+### 4.7 List view anatomy (mandatory)
+
+> **A list page is not just a styled `<Table>`.** Every list view in this template MUST include the elements below. Do not ship a list page without them.
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  Header                                                            │
+│  H2 "Projects" ……………………………………………………  [+ Create New]  │
+├────────────────────────────────────────────────────────────────────┤
+│  Toolbar                                                           │
+│  [ 🔍  Search…              ]   [Status ▾] [Owner ▾]      ⋮     │
+├────────────────────────────────────────────────────────────────────┤
+│  Active-filter chip row (only when filters are set)               │
+│  [Status: Active ×]  [Owner: me ×]                     Clear all  │
+├────────────────────────────────────────────────────────────────────┤
+│  Table                                                             │
+│  …rows…                                                            │
+│                                                                    │
+│             Rows per page: 10  ·  1–10 of 234   <  >              │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+**Required elements** (no exceptions, even for small datasets):
+
+| # | Element | Rule |
+|---|---|---|
+| 1 | Page heading (`<Typography variant="h2">`) + primary action button (`+ Create …`) | Header row, action right-aligned. |
+| 2 | **Search input** | Always present. Bound to a server-side `search` filter (no client-side filtering). Debounce 300–500ms. Width: full on `xs`, 280–320px on `sm+`. Placeholder describes scope (e.g., "Search projects…"). |
+| 3 | **At least one filter control** | Status / category / owner / date-range — whichever is most useful for the resource. Multi-select where it makes sense. Filters push into Refine's `filters` array, not into component state. |
+| 4 | Active-filter chip row | Shown only when ≥1 filter is set. Each chip displays `<field>: <value>` and removes the filter on `×` click. "Clear all" link resets every filter (but keeps search). |
+| 5 | The table itself | Styled by the theme (`MuiTable*`). 30px avatar in name cells; status as `<Chip>` (see §3); row hover already wired. |
+| 6 | **Pagination** | Server-side. Default 10 rows. "Rows per page · X–Y of N · ‹ ›". Use Refine's `useTable`/`useDataGrid` pagination, not a hand-rolled one. |
+| 7 | "**No results**" empty state | If search returns 0 rows, render the "No results found" variant from §4.6. |
+| 8 | "**No matching items**" empty state | If filters (not search) return 0 rows, render the "No matching items" variant from §4.6. |
+| 9 | "**No data yet**" empty state | If the resource has 0 rows total (not a search/filter miss), render the "No data yet" variant from §4.6. Decide via `totalCount === 0 && filters.length === 0 && !search`. |
+| 10 | "**Unable to load**" error state | On API failure, render the error variant from §4.6 with a "Try again" CTA. |
+| 11 | **Row hover + selected states** | Hover renders `primary-50` tint (already wired). Selected rows render `primary-50` fill + 2px primary-default left border via `<TableRow selected>` — also already wired in theme. |
+
+**Toolbar element styling** (matches the design system's "Filtering & Search" page):
+
+| Toolbar piece | Styling |
+|---|---|
+| **Search input** | `<TextField size="small">` with `SearchRoundedIcon` start adornment + `CloseRoundedIcon` end adornment (clear). Placeholder: `Search <resource>, …`. The 16px input font-size + 12×16 padding come from the theme — don't override. |
+| **"Filters" button** (popover/dialog trigger) | `<Button variant="outlined" startIcon={<FilterListRoundedIcon />}>Filters</Button>`. Pairs nicely with an inline chip row. |
+| **Active filter chip** | `<Chip variant="outlined" color="primary" label="Status: Active" onDelete={…} />`. Reads as `<field>: <value>`. `onDelete` removes only that one filter. |
+| **"Clear all" link** | `<Button size="small" variant="text" onClick={clearAll}>Clear all</Button>` at the end of the chip row — text-style so it doesn't compete with the chips. |
+| **Pagination footer** | Use Refine's `<DataGrid>` built-in footer. If hand-wiring `useList`, use `<TablePagination>` from MUI — same `Rows per page · X–Y of N · ‹ ›` shape. |
+
+**Implementation — defer to the skill**
+
+This file owns the *visual contract* above. The *Refine wiring* (`useDataGrid` vs `useList`, server-side `filters[]`, debounce timing, `meta.search`, pagination, `noRowsOverlay`) lives in the [`taruvi-refine-providers`](.codex/skills/taruvi-refine-providers/SKILL.md) skill — see its "DataGrid checklist" and `database-provider.md` reference. Read those before writing the page so the wiring stays in sync with the skill rather than drifting in this template.
+
+**Anti-pattern**
+
+```tsx
+// ❌ DON'T — bare table, no search, no filters, no pagination
+const { result } = useList({ resource: "projects" });
+return (
+  <Table>
+    <TableHead>…</TableHead>
+    <TableBody>
+      {result.data.map((row) => <TableRow>…</TableRow>)}
+    </TableBody>
+  </Table>
+);
+```
+
+If you find yourself writing the above, stop. The diagram above is the contract; the skill is how you implement it.
+
+### 4.8 Confirmation dialog (mandatory for destructive actions)
+
+> **Every destructive action MUST go through a confirmation dialog.** This includes delete, archive, force-remove, permanent revoke, bulk-delete — anything the user cannot trivially undo. A bare `useDelete` call wired to a delete icon without a dialog is a bug.
+
+The design system specifies:
+
+```
+┌──────────────────────────────────────────────┐
+│  Delete project?                             │  ← Title — Quicksand H4, asks the question
+│                                              │
+│  Are you sure you want to delete             │  ← Body — body2, plain
+│  "Website Redesign"? This action cannot      │     Names the specific item in quotes.
+│  be undone.                                  │     States consequence explicitly.
+│                                              │
+│                     [ Cancel ]  [ Delete ]   │  ← Actions — Cancel left, destructive right
+└──────────────────────────────────────────────┘
+```
+
+**Rules:**
+
+| # | Rule |
+|---|---|
+| 1 | Title is a **question** ending in `?` (e.g., "Delete project?", "Archive 5 invoices?") — not a statement. |
+| 2 | Body **names the specific item** in quotes when single, or **shows the count** when bulk: *"Are you sure you want to delete 'Website Redesign'?"* / *"Are you sure you want to delete 5 invoices?"* |
+| 3 | Body **states the consequence**: "This action cannot be undone." Always. |
+| 4 | Primary button is **destructive** (`color="error"`), label matches the verb (`Delete`, `Archive`, `Remove`), never generic "OK". |
+| 5 | Cancel button is **outlined/text** secondary, on the **left**. |
+| 6 | Body should hint at side effects when applicable: *"This will also remove 12 attachments and 3 comments."* |
+
+**Implementation:**
+
+```tsx
+import {
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
+  Button,
+} from "@mui/material";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+
+<Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} maxWidth="xs" fullWidth>
+  <DialogTitle>Delete project?</DialogTitle>
+  <DialogContent>
+    <DialogContentText>
+      Are you sure you want to delete <strong>"{project.name}"</strong>?
+      This action cannot be undone.
+    </DialogContentText>
+  </DialogContent>
+  <DialogActions>
+    <Button variant="outlined" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+    <Button variant="contained" color="error" startIcon={<DeleteRoundedIcon />} onClick={handleDelete}>
+      Delete project
+    </Button>
+  </DialogActions>
+</Dialog>
+```
+
+**Anti-pattern:**
+
+```tsx
+// ❌ DON'T — instant delete on click, no chance to cancel
+<IconButton onClick={() => deleteRecord(id)}>
+  <DeleteRoundedIcon />
+</IconButton>
+
+// ❌ DON'T — generic confirm()
+onClick={() => { if (confirm("Are you sure?")) deleteRecord(id) }}
+
+// ❌ DON'T — confirmation but the primary button is "OK" instead of the verb
+<Button>OK</Button>     // doesn't match what the user is actually doing
+```
+
+For **bulk** confirmations, the body should reflect the count: *"Are you sure you want to delete **5 projects**? This action cannot be undone."* — and the primary CTA should read `Delete 5 projects` so the user re-reads the count right before clicking.
 
 ---
 

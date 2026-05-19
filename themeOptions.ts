@@ -160,7 +160,8 @@ export const taruviTokens = {
     nav: '0 2px 8px rgba(0,0,0,0.12)',
     sidebar: '0 2px 8px rgba(0,0,0,0.08)',
     swatch: '0 1px 6px rgba(0,0,0,0.10)',
-    focusRing: '0 0 0 3px rgba(30,136,229,0.12)',
+    // 2px solid-feeling ring at higher opacity — matches design "ring outline (2px, --ring-color)"
+    focusRing: '0 0 0 2px rgba(30,136,229,0.35)',
   },
 
   // Border radii (exactly as in the design system)
@@ -185,8 +186,9 @@ export const taruviTokens = {
     formGroupMb: 18,
     formActionsMt: 24,
     formActionsGap: 10,
-    inputPaddingY: 10,
-    inputPaddingX: 14,
+    // Design spec: input padding 12×16 (was 10×14); pairs with 40px standard input height
+    inputPaddingY: 12,
+    inputPaddingX: 16,
     btnSm: '6px 14px',
     btnMd: '10px 20px',
     btnLg: '14px 28px',
@@ -194,7 +196,8 @@ export const taruviTokens = {
     chipSm: '2px 9px',
     tableCell: '12px 16px',
     statusMsg: '14px 18px',
-    sidebarItem: '10px 12px',
+    // Design spec: sidebar item 16-20 vertical / 12-16 horizontal — use 14×16 to land in the middle of both
+    sidebarItem: '14px 16px',
   },
 
   // Component dimensions
@@ -259,7 +262,7 @@ export const taruviTokens = {
     label: '0.75rem',  // 12px
     footer: '0.6875rem', // 11px
     formLabel: '0.8125rem',  // 13px
-    formInput: '0.875rem',   // 14px
+    formInput: '1rem',       // 16px — design spec (also prevents iOS Safari from zooming on focus)
     formHelper: '0.6875rem', // 11px
     btnSm: '0.6875rem',  // 11px
     btnMd: '0.8125rem',  // 13px
@@ -268,8 +271,8 @@ export const taruviTokens = {
     chipSm: '0.625rem',  // 10px
     tableHead: '0.6875rem', // 11px
     tableCell: '0.8125rem', // 13px
-    breadcrumb: '0.875rem', // 14px
-    breadcrumbCurrent: '1rem', // 16px
+    breadcrumb: '0.875rem',        // 14px
+    breadcrumbCurrent: '1.125rem', // 18px — design spec says 18-20px / 600
   },
 } as const;
 
@@ -590,6 +593,17 @@ const componentOverrides = (mode: 'light' | 'dark'): ThemeOptions['components'] 
             borderColor: taruviTokens.error[600],
             borderWidth: 1,
           },
+          // Design spec: disabled = opacity 0.5, no pointer events
+          '&.Mui-disabled': {
+            opacity: 0.5,
+            pointerEvents: 'none',
+          },
+          // Design spec: read-only = muted background, no border
+          '&.Mui-readOnly': {
+            backgroundColor: isLight ? taruviTokens.neutral[100] : 'rgba(255,255,255,0.06)',
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent' },
+            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent' },
+          },
         },
         input: {
           padding: `${taruviTokens.spacing.inputPaddingY}px ${taruviTokens.spacing.inputPaddingX}px`,
@@ -714,6 +728,14 @@ const componentOverrides = (mode: 'light' | 'dark'): ThemeOptions['components'] 
         root: {
           '&:hover': {
             backgroundColor: isLight ? taruviTokens.primary[50] : 'rgba(30,136,229,0.08)',
+          },
+          // Design spec: selected row = primary-50 fill + 2px primary-default left border
+          '&.Mui-selected': {
+            backgroundColor: isLight ? taruviTokens.primary[50] : 'rgba(30,136,229,0.12)',
+            boxShadow: `inset 2px 0 0 ${taruviTokens.button.primaryDefault}`,
+            '&:hover': {
+              backgroundColor: isLight ? taruviTokens.primary[100] : 'rgba(30,136,229,0.18)',
+            },
           },
           '&:last-child td': { borderBottom: 'none' },
         },
