@@ -1,21 +1,18 @@
 ---
 name: taruvi-app-developer
 description: >
-  Use this skill for any backend work on a Taruvi app — provisioning datatables
-  with Frictionless schemas, writing Cerbos policies, managing roles and users,
-  registering and editing serverless functions, creating analytics queries,
-  managing buckets, secrets, tags, or running audited raw SQL via the Taruvi
-  MCP server. Also use when authoring Python function bodies that run inside
-  the Taruvi function runtime (`def main(params, user_data, sdk_client)`),
-  including multi-resource cascades, event/cron handlers, public webhooks, and
-  external API calls with stored secrets. Activate on phrases like "create a
-  datatable", "Frictionless schema", "Cerbos policy", "manage_policies",
-  "provision Taruvi", "upsert rows", "manage_function", "execute_function",
-  "serverless function", "scheduled job", "function trigger",
-  "create_update_schema", "execute_raw_sql", "analytics query", "sdk_client",
-  or whenever the user is working with Python code that imports nothing
-  browser-specific and references the Taruvi runtime. Skip when the work is
-  purely Refine frontend wiring (use `taruvi-refine-providers` instead).
+  Use this skill for backend work on a Taruvi app — provisioning datatables
+  (Frictionless schemas), Cerbos policies, roles/users, serverless functions,
+  analytics queries, buckets, secrets, tags, and audited raw SQL via the Taruvi
+  MCP server; also for authoring Python function bodies (`def main(params,
+  user_data, sdk_client)`) that run in the Taruvi function runtime, including
+  event/cron handlers, public webhooks, and external API calls with stored
+  secrets. Activate on `create_update_schema`, `manage_policies`,
+  `manage_function`, `execute_function`, `execute_raw_sql`, `sdk_client`,
+  'Frictionless schema', 'Cerbos policy', 'datatable', 'serverless function',
+  'scheduled job', 'analytics query', or Python code referencing the Taruvi
+  runtime. Skip when the work is purely Refine frontend wiring — use
+  `taruvi-refine-providers` instead.
 license: Apache-2.0
 compatibility: >
   Requires the Taruvi MCP server for provisioning tasks (tools prefixed
