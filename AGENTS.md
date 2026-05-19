@@ -47,6 +47,11 @@ After shipping a fix, truncate before asking the user to re-test so the next rep
 
 If the file is missing, no errors have been captured yet — ask the user to reproduce the issue once, then re-read.
 
+**Two-layer error handling** (don't confuse them):
+
+- **Render-time errors** (`TypeError: x is not a function`, missing data shape, etc.) inside the React tree are caught by [`src/components/ErrorBoundary.tsx`](src/components/ErrorBoundary.tsx). It shows a styled MUI error card with copy/retry actions and reports via `clientLogger`.
+- **Bootstrap / module-load errors** (e.g., `SyntaxError: The requested module … does not provide an export named 'useDataGrid'`) fire *before* React mounts, so they never reach the ErrorBoundary. They're caught by the window-level trap in [`src/index.tsx`](src/index.tsx) and rendered via [`src/utils/bootstrapErrorScreen.ts`](src/utils/bootstrapErrorScreen.ts) — a vanilla-DOM UI with zero MUI dependency so it works even when the failing module is something MUI relies on. Almost always the fix is a wrong `import` path (most commonly Refine v5 wiring — `useDataGrid` is from `@refinedev/mui`, not `@refinedev/core`).
+
 ## Mandatory UI / Design System Preflight
 
 For any task that **renders, styles, or restyles UI** — new pages, layouts, forms, tables, charts, status badges, colors, typography, spacing, theme work, MUI overrides, or any "make it look like X" request:
