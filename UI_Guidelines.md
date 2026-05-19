@@ -94,14 +94,40 @@ For **priority chips** (outlined variant), the spec uses high `#c2185b`, medium 
 <Chip variant="outlined" color="success" label="LOW" />
 ```
 
-For **category / tag chips**:
+For **category / tag chips** (filled):
+
+The design system uses a **4-color pastel rotation palette** so adjacent tags read as distinct without looking like status. Exposed in tokens as `taruviTokens.tagPalette[i]`:
+
+| Index | Bg | Text | Design system example |
+|---|---|---|---|
+| `0` | `#E0F6FE` | `#004369` | Design (blue) |
+| `1` | `#EDE7F6` | `#4527A0` | Development (purple) |
+| `2` | `#E8F5E9` | `#1B5E20` | Marketing (green) |
+| `3` | `#FFF3E0` | `#E65100` | Research (orange) |
+
+Pick deterministically from the tag's name so the same category always lands on the same color:
 
 ```tsx
-// Filled
-<Chip label="Design" sx={{ bgcolor: '#E0F6FE', color: '#004369', fontFamily: 'Quicksand', fontWeight: 700 }} />
-// Outlined
+import { taruviTokens } from "@/theme/themeOptions";
+
+const colorForTag = (name: string) => {
+  // tiny stable hash → palette index
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) | 0;
+  return taruviTokens.tagPalette[Math.abs(h) % taruviTokens.tagPalette.length];
+};
+
+const { bg, text } = colorForTag(tag);
+<Chip label={tag} sx={{ bgcolor: bg, color: text, fontFamily: 'Quicksand', fontWeight: 700 }} />
+```
+
+For **category / tag chips (outlined)** — single brand-blue outline is fine when tags are technical (Frontend, Backend, API) rather than thematic:
+
+```tsx
 <Chip variant="outlined" label="Frontend" sx={{ color: '#1976d2', borderColor: '#1976d2' }} />
 ```
+
+> **Don't** use the rotation palette for **status** — status uses the semantic chip colors documented above in §3. Rotation is for *categories* where the meaning is "different from each other", not "different in severity".
 
 ---
 
@@ -131,28 +157,84 @@ The theme styles components but doesn't dictate page composition. Use these patt
 
 ### 4.3 Form layout
 
-The design uses a 2-column grid for paired inputs and a "form section title" header. Wire it as:
+The design uses a single-column layout by default, a 2-column grid for related paired inputs, and a "form section title" header for grouping. The theme handles input visuals (12×16 padding, 16px base font, 10px radius, focus ring) — this section covers the layout, labels, conventions, and accessibility you have to do by hand.
+
+**Vertical rhythm** (design system spec — also exported as theme tokens):
+
+| Gap | Value | Token |
+|---|---|---|
+| Label → input | 8px | `taruviTokens.spacing.formLabelToInput` |
+| Input → helper / error | 4px | `taruviTokens.spacing.formInputToHelper` |
+| Between adjacent fields in a stack | 16px | `taruviTokens.spacing.formFieldGap` |
+| Between form sections | 32px | `taruviTokens.spacing.formSectionGap` |
+| Form actions top margin | 24px | `taruviTokens.spacing.formActionsMt` |
+| Cancel ↔ Save button gap | 10px | `taruviTokens.spacing.formActionsGap` |
+
+**Section title** (use above each logical group of fields — e.g., "Contact Information", "Billing Address"):
 
 ```tsx
-{/* Form section title — Quicksand 600 13px UPPERCASE 0.05em, muted */}
 <Typography sx={{
   fontFamily: 'Quicksand', fontSize: 13, fontWeight: 600,
   textTransform: 'uppercase', letterSpacing: '0.05em',
-  color: 'text.disabled', mt: 3, mb: 1.75,
-}}>Edit Task</Typography>
+  color: 'text.disabled', mt: 4, mb: 1.75,   // 32px above (between-section), ~14px to first field
+}}>Contact Information</Typography>
+```
 
-{/* Form row — two columns, 16px gap */}
+**Two-column grid** for related paired inputs (Start/End date, Status/Priority, City/Country). Stacks on mobile:
+
+```tsx
 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
   <TextField label="Start Date" type="date" />
-  <TextField label="End Date" type="date" required />
+  <TextField label="End Date *" type="date" required />
 </Box>
+```
 
-{/* Form actions — right-aligned, 10px gap, 24px top margin */}
+> Single-column is the **default** layout. Use 2-column only when fields are clearly related and similar in importance.
+
+**Field-label conventions:**
+
+| Convention | Example | When |
+|---|---|---|
+| **Required** marker | `Title *` (asterisk handled automatically by `<TextField required>`) | The asterisk is wired in the theme via `MuiFormLabel-asterisk` styled in error color |
+| **Optional** marker | `Updated End Date (Optional)` — append `(Optional)` to the label text | Use when **most** fields in the form are required and you need to call out the exception |
+| **Character counter** | `0/500 characters` as helper text on text/textarea inputs with a `maxLength` | Always show when there's a hard limit |
+| **Helper text** | `Cannot modify after creation` | Use for inline guidance, disabled hints, examples (`e.g. example.com`) |
+| **Error text** | `Company name is required` | Replace helper text; field border turns error color automatically |
+
+**Form actions** — Cancel **left**, primary **right**, right-aligned at the bottom of the form/card:
+
+```tsx
 <Stack direction="row" spacing={1.25} sx={{ mt: 3, justifyContent: 'flex-end' }}>
   <Button variant="outlined">Cancel</Button>
-  <Button variant="contained">Save</Button>
+  <Button variant="contained">Save Changes</Button>
 </Stack>
 ```
+
+> **Order matters**: secondary action on the **left**, primary on the **right**. This is the spec, not a preference — primary on the right matches reading flow ("Cancel … or … Save").
+
+**Collapsible section** for optional/advanced fields (use sparingly — only when most users won't need them):
+
+```tsx
+<Accordion sx={{ boxShadow: 'none', '&:before': { display: 'none' } }}>
+  <AccordionSummary expandIcon={<ExpandMoreRoundedIcon />}>
+    <Typography>Additional Notes (Optional)</Typography>
+  </AccordionSummary>
+  <AccordionDetails>
+    <TextField label="Notes" multiline rows={4} fullWidth />
+  </AccordionDetails>
+</Accordion>
+```
+
+**Accessibility checklist** (from the design system — agents must verify each before shipping a form):
+
+- [ ] Every input has an associated label via `<TextField label="…">` (MUI handles the `htmlFor`).
+- [ ] Use the right `type=` for the field — `email` / `tel` / `number` / `date` / `url` / `password`. Mobile shows the right keyboard.
+- [ ] WCAG AA 4.5:1 contrast on label, helper, error text. (The theme tokens are AA-compliant; **don't override colors** without checking contrast.)
+- [ ] Error messages are specific (`Email must include @`) — never generic (`Invalid input`).
+- [ ] All controls reachable by tab; submit on `Enter` works.
+- [ ] `aria-describedby` links helper / error text to the input — `<TextField helperText="..." />` already does this for you; if you build a custom field, wire it yourself.
+- [ ] Required-field marker uses both visual (`*`) and semantic (`required` attribute, which adds `aria-required`).
+- [ ] Touch targets meet 44px on mobile — buttons already do via the `@media (pointer: coarse)` rule in the theme.
 
 ### 4.4 Hero / cover gradient
 
@@ -393,6 +475,288 @@ onClick={() => { if (confirm("Are you sure?")) deleteRecord(id) }}
 ```
 
 For **bulk** confirmations, the body should reflect the count: *"Are you sure you want to delete **5 projects**? This action cannot be undone."* — and the primary CTA should read `Delete 5 projects` so the user re-reads the count right before clicking.
+
+### 4.9 Bulk actions toolbar (mandatory when list supports selection)
+
+> **If a list page has a selection checkbox column, it MUST have a bulk-actions toolbar** that appears when ≥1 row is selected. Without it, the checkbox is a dead control.
+
+Two visual variants — both are spec'd, pick by emphasis:
+
+**Primary variant** (high-emphasis — full-width primary-blue bar):
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  3 items selected                          [ Export ] [ Delete ] × │  ← bg: button.primaryDefault
+└────────────────────────────────────────────────────────────────────┘   text: white, buttons: outlined-white
+```
+
+**Subtle variant** (light primary-50 background — use when the toolbar sits inside a card or under tabs and would feel loud at full blue):
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  5 items selected                          ↓ Export   🗑 Delete  × │  ← bg: primary[50]
+└────────────────────────────────────────────────────────────────────┘   text: primary, buttons: text-style
+```
+
+**Rules:**
+
+| # | Rule |
+|---|---|
+| 1 | Show **only when** ≥1 row is selected. Hidden otherwise. |
+| 2 | Display the **count explicitly** (`3 items selected`, not "Selected"). |
+| 3 | Provide a clear way to **clear the selection** (the `×` on the right). |
+| 4 | Destructive bulk actions (Delete, Archive, Force-revoke) use **destructive styling** (red text/border) AND **route through §4.8 confirmation dialog** with the count in the body. |
+| 5 | Position **above or below the list**, not floating. Above is more discoverable; below avoids pushing the table down on every selection. |
+| 6 | Keep the set of bulk actions short (3 max — Export / Edit / Delete is typical). Overflow → "More actions" `⋮` menu. |
+
+**Implementation (primary variant):**
+
+```tsx
+import { Box, Stack, Button, IconButton, Typography } from "@mui/material";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+
+{selectedIds.length > 0 && (
+  <Box sx={{
+    bgcolor: 'primary.main', color: 'primary.contrastText',
+    borderRadius: 1.25, px: 2, py: 1, mb: 2,
+    display: 'flex', alignItems: 'center', gap: 2,
+  }}>
+    <Typography sx={{ flex: 1, fontWeight: 600 }}>
+      {selectedIds.length} item{selectedIds.length === 1 ? '' : 's'} selected
+    </Typography>
+    <Stack direction="row" spacing={1}>
+      <Button variant="outlined" startIcon={<DownloadRoundedIcon />}
+        sx={{ color: 'inherit', borderColor: 'rgba(255,255,255,0.5)' }} onClick={onExport}>
+        Export
+      </Button>
+      <Button variant="outlined" startIcon={<DeleteRoundedIcon />}
+        sx={{ color: 'inherit', borderColor: 'rgba(255,255,255,0.5)' }}
+        onClick={() => setConfirmBulkDelete(true)}>
+        Delete
+      </Button>
+      <IconButton sx={{ color: 'inherit' }} onClick={() => setSelectedIds([])}>
+        <CloseRoundedIcon />
+      </IconButton>
+    </Stack>
+  </Box>
+)}
+```
+
+**Anti-pattern:**
+
+```tsx
+// ❌ DON'T — checkbox column with no toolbar
+<DataGrid checkboxSelection />     // user can select but can't do anything with the selection
+
+// ❌ DON'T — bulk delete without confirmation
+<Button onClick={() => deleteMany(selectedIds)}>Delete</Button>
+```
+
+### 4.10 Loading states (mandatory when fetching data)
+
+> **Never leave a page blank while data loads.** Use one of the three patterns below.
+
+| Variant | When | Look |
+|---|---|---|
+| **Skeleton loader** | Initial list / card / table load — placeholder for content that will fill in shortly | Light gray animated bars matching the shape of rows/cells |
+| **Spinner overlay** | Mid-page action that takes >300ms — refresh, filter change, big query | Centered `<CircularProgress />` + "Loading data…" subtitle, inside the card's body area (not full-screen) |
+| **Inline button spinner** | Async button click — submitting a form, executing a function | Replace the button label with `<CircularProgress size={16} />` and disable the button |
+
+**Skeleton (table rows):**
+
+```tsx
+import { Skeleton, TableRow, TableCell } from "@mui/material";
+
+{isLoading
+  ? Array.from({ length: 5 }).map((_, i) => (
+      <TableRow key={i}>
+        {columns.map((c) => (
+          <TableCell key={c.field}>
+            <Skeleton variant="text" />
+          </TableCell>
+        ))}
+      </TableRow>
+    ))
+  : rows.map((row) => <TableRow key={row.id}>…</TableRow>)
+}
+```
+
+**Skeleton (card grid):**
+
+```tsx
+<Skeleton variant="rounded" height={180} sx={{ borderRadius: 2 }} />
+```
+
+**Spinner overlay (inside a card):**
+
+```tsx
+{isLoading && (
+  <Stack sx={{ alignItems: 'center', justifyContent: 'center', py: 8 }} spacing={1.5}>
+    <CircularProgress />
+    <Typography variant="body2" color="text.disabled">Loading data…</Typography>
+  </Stack>
+)}
+```
+
+**Inline button spinner:**
+
+```tsx
+<Button variant="contained" disabled={isSubmitting} startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}>
+  {isSubmitting ? 'Saving…' : 'Save Changes'}
+</Button>
+```
+
+**Anti-pattern:**
+
+```tsx
+// ❌ DON'T — blank table or "Loading..." text only
+{isLoading ? <p>Loading...</p> : <DataGrid rows={rows} />}
+
+// ❌ DON'T — full-screen modal spinner that blocks the entire app for a 400ms query
+<Backdrop open={isLoading}><CircularProgress /></Backdrop>
+```
+
+Refine wiring: `useList` / `useDataGrid` expose `query.isLoading` for initial load and `query.isFetching` for refetches — use the appropriate one (skeleton for `isLoading`, subtle overlay or grayed table for `isFetching`).
+
+### 4.11 Show / Detail page anatomy (mandatory)
+
+> **A show page is not just a list of fields.** Every detail page MUST include the elements below — same enforcement principle as §4.7 list anatomy.
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  Breadcrumb                                                        │
+│  📁 Projects  /  Website Redesign                                  │  ← §4.7 toolbar style; current page bold
+├────────────────────────────────────────────────────────────────────┤
+│  Header                                                            │
+│  H2  Website Redesign      [IN PROGRESS]    [Edit] [Delete] [⋮]  │  ← title + status chip + actions
+│  Mar 1, 2026 – Jun 30, 2026 · Owner: Sarah Johnson                 │  ← meta line, body2 muted
+├────────────────────────────────────────────────────────────────────┤
+│  Tabs (when there is related data)                                 │
+│  [ Overview ]  [ Tasks (12) ]  [ Files (4) ]  [ Activity ]        │  ← Tabs + count in label
+├────────────────────────────────────────────────────────────────────┤
+│  Active tab body                                                   │
+│  …field rows, related-record cards, sub-lists…                     │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+**Required elements:**
+
+| # | Element | Rule |
+|---|---|---|
+| 1 | **Breadcrumb** | Always present. Last segment = current resource (bold, larger — wired in theme). Provides escape route up. |
+| 2 | **Page heading** (H2) | The entity's primary identifier. |
+| 3 | **Status chip** next to title | If the resource has a status field, render it here too — not just in the table. |
+| 4 | **Action cluster** (Edit / Delete / More) | Right-aligned, in the header. Delete goes through §4.8 confirmation dialog. |
+| 5 | **Meta line** below title | Body2, muted: date range, owner, created/updated, anything else that identifies the record at a glance. |
+| 6 | **Tabs** when there are related records | Format: `Label (count)` — e.g., `Tasks (12)`. Skip tabs only if the page truly has one block of content. |
+| 7 | **Empty states** for related-record tabs | Same four-variant decision tree from §4.6. |
+| 8 | **Loading states** | Same three variants from §4.10. |
+
+**Anti-pattern:**
+
+```tsx
+// ❌ DON'T — bare field dump
+<Stack>
+  <Typography>Name: {project.name}</Typography>
+  <Typography>Status: {project.status}</Typography>
+  <Typography>Owner: {project.owner_name}</Typography>
+</Stack>
+```
+
+Use Refine's `<Show>` from `@refinedev/mui` as the header scaffold — it gives you the breadcrumb + title + action buttons for free.
+
+### 4.12 Table column-type rules
+
+The design system specifies how each column type should behave. Apply these whenever you build a list — including `<DataGrid>` `colDef` and hand-written `<TableCell>` rows.
+
+| Column type | Alignment | Format / behavior |
+|---|---|---|
+| **Text** | Left | Truncate with ellipsis + `<Tooltip>` showing the full value on hover |
+| **Number** / **Currency** / **Percentage** | **Right** | Consistent format — currency: `$5,000,000` (with separators); percentages: `87%`; integers: `1,234` |
+| **Date** | Left | `MMM DD, YYYY` (e.g., `Mar 30, 2026`) — never raw ISO, never mixed formats in the same table |
+| **Status** | Left | `<Chip>` from §3 — never a plain colored dot or text |
+| **Selection** (bulk-action checkbox) | **Left** edge | First column, fixed narrow width |
+| **Actions** (icon-only buttons) | **Right** edge | Last column, fixed narrow width. Tooltip on every icon. |
+| **Avatar + name** | Left | 30px avatar (from §8) + name on one line; if the name links to the show page, render as a link, not the row click |
+
+**Column count:** keep visible columns to **5–6 optimal**. More columns → use a column picker, condense to fewer, or move secondary data to the show page.
+
+**Empty cell value:** render an em-dash `—`, never an empty string or `null`. Aligns visually with present values.
+
+```tsx
+const columns: GridColDef[] = [
+  { field: "name", headerName: "Project Name", flex: 1.2,
+    renderCell: (p) => <Tooltip title={p.value}><span>{p.value}</span></Tooltip> },
+  { field: "status", headerName: "Status", width: 140,
+    renderCell: (p) => <Chip label={p.value} color="info" /> },
+  { field: "due", headerName: "Due Date", width: 140,
+    valueFormatter: (v) => v ? format(new Date(v), "MMM dd, yyyy") : "—" },
+  { field: "amount", headerName: "Amount", width: 140, align: "right", headerAlign: "right",
+    valueFormatter: (v) => v != null ? `$${v.toLocaleString()}` : "—" },
+  { field: "actions", type: "actions", width: 120, align: "right",
+    getActions: (p) => [
+      <GridActionsCellItem icon={<Tooltip title="Edit"><EditRoundedIcon /></Tooltip>} label="Edit" onClick={…} />,
+      <GridActionsCellItem icon={<Tooltip title="Delete"><DeleteRoundedIcon /></Tooltip>} label="Delete" onClick={…} />,
+    ],
+  },
+];
+```
+
+### 4.13 Entity card (kanban / dashboard alternative to a row)
+
+When a list visualization makes more sense as **cards** than rows (kanban boards, dashboard widgets, gallery views, mobile-first lists), use this anatomy. Same data, different framing.
+
+```
+┌────────────────────────────────────┐
+│  Title (H5)                      ⋮ │  ← H5 + overflow menu
+│  Short description (body2 muted)   │
+│                                    │
+│  [IN PROGRESS] [HIGH] [Design]     │  ← status + priority + tag chips
+│                                    │
+│  Due: Mar 30, 2026     ✎ 🗑       │  ← meta + actions (icon-only)
+└────────────────────────────────────┘
+```
+
+```tsx
+<Card sx={{ p: 0 /* theme adds 28px; override if you want tighter */ }}>
+  <CardContent>
+    <Stack direction="row" alignItems="flex-start" justifyContent="space-between" sx={{ mb: 1 }}>
+      <Typography variant="h5">{project.name}</Typography>
+      <IconButton size="small"><MoreVertRoundedIcon /></IconButton>
+    </Stack>
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      {project.description}
+    </Typography>
+    <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
+      <Chip label={project.status} color="info" />
+      <Chip variant="outlined" label={project.priority} color="error" />
+      <Chip label={project.category} sx={{ bgcolor: tagBg, color: tagText }} />
+    </Stack>
+    <Stack direction="row" alignItems="center" justifyContent="space-between">
+      <Typography variant="body2" color="text.secondary">
+        Due: {format(project.due, "MMM dd, yyyy")}
+      </Typography>
+      <Stack direction="row">
+        <IconButton size="small" onClick={onEdit}><EditRoundedIcon fontSize="small" /></IconButton>
+        <IconButton size="small" color="error" onClick={onDelete}><DeleteRoundedIcon fontSize="small" /></IconButton>
+      </Stack>
+    </Stack>
+  </CardContent>
+</Card>
+```
+
+**When to use cards vs. rows:**
+
+| Use rows (§4.7) when | Use cards (§4.13) when |
+|---|---|
+| User needs to scan many records by column | User needs to see records one-at-a-time with context |
+| Sorting / filtering is the primary interaction | Drag-and-drop, kanban, or visual grouping is primary |
+| Mobile is secondary | Mobile is the primary target |
+| Most data is short scalars (name, status, date) | Records have rich content (cover image, multiple chips, long description) |
+
+Don't mix the two in the same page — pick one.
 
 ---
 

@@ -124,11 +124,22 @@ export const taruviTokens = {
   },
 
   // Tag / category chips
+  //
+  // The design system uses a 4-color **pastel rotation palette** for category
+  // chips (Design / Development / Marketing / Research are shown in four
+  // distinct fills). Use `tagPalette[hashKey % 4]` to pick a deterministic
+  // color from a tag name so the same category always lands on the same color.
   tag: {
-    fillBg: '#E0F6FE',
+    fillBg: '#E0F6FE',     // legacy single-fill (kept for backward compat)
     fillText: '#004369',
     outlineColor: '#1976d2',
   },
+  tagPalette: [
+    { bg: '#E0F6FE', text: '#004369' }, // blue — Design
+    { bg: '#EDE7F6', text: '#4527A0' }, // purple — Development
+    { bg: '#E8F5E9', text: '#1B5E20' }, // green — Marketing
+    { bg: '#FFF3E0', text: '#E65100' }, // orange — Research
+  ],
 
   // Tab / surface tokens
   surface: {
@@ -186,6 +197,11 @@ export const taruviTokens = {
     formGroupMb: 18,
     formActionsMt: 24,
     formActionsGap: 10,
+    // Design spec: form vertical rhythm
+    formLabelToInput: 8,    // gap between label and input
+    formInputToHelper: 4,   // gap between input and helper / error text
+    formFieldGap: 16,       // gap between adjacent fields in a stack
+    formSectionGap: 32,     // gap between form sections
     // Design spec: input padding 12×16 (was 10×14); pairs with 40px standard input height
     inputPaddingY: 12,
     inputPaddingX: 16,
@@ -415,6 +431,10 @@ const componentOverrides = (mode: 'light' | 'dark'): ThemeOptions['components'] 
           boxShadow: 'none',
           transition: taruviTokens.transition.base,
           gap: 6,
+          // Design spec: 44px min touch target on coarse pointers (mobile/tablet) — WCAG 2.5.5
+          '@media (pointer: coarse)': {
+            minHeight: 44,
+          },
         },
         sizeSmall: {
           padding: taruviTokens.spacing.btnSm,
