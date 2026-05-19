@@ -20,22 +20,28 @@ You do **not** need to set these manually anywhere — they apply across every c
 |---|---|---|
 | Body font | Open Sans, 13px, line-height 1.6 | `MuiCssBaseline` |
 | Heading font | Quicksand (H1 800 / H2–H6 700) | `typography.h1…h6` |
-| Buttons | Quicksand 700 UPPERCASE, 8px radius, sm/md/lg = 6·14 / 10·20 / 14·28 px, min-h 28/36/44 | `MuiButton` |
+| Buttons | Quicksand 700 UPPERCASE, 8px radius, sm/md/lg = 6·14 / 10·20 / 14·28 px, min-h 28/36/44, **44px on `(pointer: coarse)` for mobile WCAG** | `MuiButton` |
 | Chips | Pill (999), Quicksand 700 UPPERCASE 0.06em, h 24 / sm 20 | `MuiChip` |
+| **Tag chips (rotation)** | 4 pastel `variant="tagBlue"/"tagPurple"/"tagGreen"/"tagOrange"` — no `sx` needed | `MuiChip` variants |
 | Cards | 16px radius, 28px padding, `0 2px 12px rgba(0,0,0,0.07)` shadow | `MuiCard` / `MuiCardContent` |
 | Card title | Quicksand 600 12px UPPERCASE 0.05em, 16px margin-bottom | `MuiCardHeader.title` |
-| Inputs | 10px radius, `#F3F3F5` fill, focus ring `0 0 0 3px rgba(30,136,229,0.12)` | `MuiOutlinedInput` |
+| Inputs | 10px radius, `#F3F3F5` fill, **12×16 padding, 16px font**, 2px focus ring, opacity-0.5 disabled, muted read-only | `MuiOutlinedInput` |
 | Form label | Open Sans 600 13px, asterisk in error | `MuiInputLabel` / `MuiFormLabel` |
 | Helper / error text | 11px, muted / error | `MuiFormHelperText` |
-| Tables | 12px wrapper, head 11px Quicksand 700 UPPERCASE, cell 13px 12×16 padding, row hover `primary-50` | `MuiTable*` |
+| **Accordion** (collapsible section) | Flat (no shadow), no top divider, 8px radius, 13px summary | `MuiAccordion*` |
+| Tables (plain) | 12px wrapper, head 11px Quicksand 700 UPPERCASE, cell 13px 12×16, row hover `primary-50`, **selected = primary-50 + 2px primary left border** | `MuiTable*` |
+| **DataGrid** | Mirrors the plain Table styling — same 12px wrapper, same head font, same 12×16 cells, same hover + selected states, same footer divider | `MuiDataGrid` |
 | Alerts | 10px radius, 14·18 padding, 4px colored left border | `MuiAlert` |
-| Breadcrumbs | 14px body, **16px / 600** for current item | `MuiBreadcrumbs` |
-| Sidebar items | 10·12 padding, 8px radius, Quicksand 600, active = `#1976d2` white | `MuiListItemButton` |
+| Breadcrumbs | 14px body, **18px / 600** for current item | `MuiBreadcrumbs` |
+| Sidebar items | 14·16 padding, 8px radius, Quicksand 600, active = `#1976d2` white | `MuiListItemButton` |
 | Tooltip | 6px radius, dark `#121414` | `MuiTooltip` |
 | Tabs | Quicksand 700 UPPERCASE, 3px primary indicator | `MuiTabs` / `MuiTab` |
 | Dialog | 16px radius, 28px padding, design-system shadow | `MuiDialog` |
+| **Dialog body text** | body2 size, secondary color (used by §4.8 confirmation dialog) | `MuiDialogContentText` |
 | Avatar (default) | 34×34, Quicksand 700, 13px | `MuiAvatar` |
-| Focus ring | `0 0 0 3px rgba(30,136,229,0.12)` everywhere | inputs, focus-visible |
+| **Skeleton** | Wave animation, theme-tinted bg (neutral-100 / dark equivalent) | `MuiSkeleton` |
+| **CircularProgress** | Default `color="primary"` (use `size={16}` inline in buttons) | `MuiCircularProgress` |
+| Focus ring | `0 0 0 2px rgba(30,136,229,0.35)` (2px solid ring) | inputs, focus-visible |
 
 ---
 
@@ -96,30 +102,37 @@ For **priority chips** (outlined variant), the spec uses high `#c2185b`, medium 
 
 For **category / tag chips** (filled):
 
-The design system uses a **4-color pastel rotation palette** so adjacent tags read as distinct without looking like status. Exposed in tokens as `taruviTokens.tagPalette[i]`:
-
-| Index | Bg | Text | Design system example |
-|---|---|---|---|
-| `0` | `#E0F6FE` | `#004369` | Design (blue) |
-| `1` | `#EDE7F6` | `#4527A0` | Development (purple) |
-| `2` | `#E8F5E9` | `#1B5E20` | Marketing (green) |
-| `3` | `#FFF3E0` | `#E65100` | Research (orange) |
-
-Pick deterministically from the tag's name so the same category always lands on the same color:
+The design system uses a **4-color pastel rotation palette** so adjacent tags read as distinct without looking like status. **Wired into the theme as four `MuiChip` variants** — use them directly, no `sx` needed:
 
 ```tsx
-import { taruviTokens } from "@/theme/themeOptions";
+<Chip variant="tagBlue"   label="Design" />
+<Chip variant="tagPurple" label="Development" />
+<Chip variant="tagGreen"  label="Marketing" />
+<Chip variant="tagOrange" label="Research" />
+```
 
-const colorForTag = (name: string) => {
-  // tiny stable hash → palette index
+| Variant | Bg | Text | Design system example |
+|---|---|---|---|
+| `tagBlue`   | `#E0F6FE` | `#004369` | Design |
+| `tagPurple` | `#EDE7F6` | `#4527A0` | Development |
+| `tagGreen`  | `#E8F5E9` | `#1B5E20` | Marketing |
+| `tagOrange` | `#FFF3E0` | `#E65100` | Research |
+
+When you have many tags and want a stable rotation, pick deterministically from the tag's name so the same category always lands on the same color:
+
+```tsx
+const TAG_VARIANTS = ['tagBlue', 'tagPurple', 'tagGreen', 'tagOrange'] as const;
+
+const variantForTag = (name: string): typeof TAG_VARIANTS[number] => {
   let h = 0;
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) | 0;
-  return taruviTokens.tagPalette[Math.abs(h) % taruviTokens.tagPalette.length];
+  return TAG_VARIANTS[Math.abs(h) % TAG_VARIANTS.length];
 };
 
-const { bg, text } = colorForTag(tag);
-<Chip label={tag} sx={{ bgcolor: bg, color: text, fontFamily: 'Quicksand', fontWeight: 700 }} />
+<Chip variant={variantForTag(tag)} label={tag} />
 ```
+
+If you need raw color values (e.g., for a non-Chip rendering), `taruviTokens.tagPalette[i]` exposes the same four `{ bg, text }` pairs.
 
 For **category / tag chips (outlined)** — single brand-blue outline is fine when tags are technical (Frontend, Backend, API) rather than thematic:
 
@@ -212,12 +225,12 @@ The design uses a single-column layout by default, a 2-column grid for related p
 
 > **Order matters**: secondary action on the **left**, primary on the **right**. This is the spec, not a preference — primary on the right matches reading flow ("Cancel … or … Save").
 
-**Collapsible section** for optional/advanced fields (use sparingly — only when most users won't need them):
+**Collapsible section** for optional/advanced fields (use sparingly — only when most users won't need them). The flat, no-top-divider look is already wired into the theme — `<Accordion>` renders correctly with no extra `sx`:
 
 ```tsx
-<Accordion sx={{ boxShadow: 'none', '&:before': { display: 'none' } }}>
+<Accordion>
   <AccordionSummary expandIcon={<ExpandMoreRoundedIcon />}>
-    <Typography>Additional Notes (Optional)</Typography>
+    Additional Notes (Optional)
   </AccordionSummary>
   <AccordionDetails>
     <TextField label="Notes" multiline rows={4} fullWidth />

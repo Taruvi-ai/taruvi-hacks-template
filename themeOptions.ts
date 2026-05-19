@@ -1,4 +1,6 @@
 import { ThemeOptions } from "@mui/material/styles";
+// Augments MUI's `components` type with MuiDataGrid so the override below typechecks.
+import type {} from "@mui/x-data-grid/themeAugmentation";
 
 /**
  * Taruvi Design System — MUI Theme
@@ -7,6 +9,18 @@ import { ThemeOptions } from "@mui/material/styles";
  * Every numeric value below is taken DIRECTLY from the design system
  * (font sizes, weights, paddings, radii, shadows, letter-spacings).
  */
+
+// ─── Module augmentation: custom MUI variants ────────────────────────
+// Adds 4 category/tag chip variants that match the design system's
+// pastel rotation palette. Usage: `<Chip variant="tagBlue" label="…" />`
+declare module "@mui/material/Chip" {
+  interface ChipPropsVariantOverrides {
+    tagBlue: true;
+    tagPurple: true;
+    tagGreen: true;
+    tagOrange: true;
+  }
+}
 
 // ─── Font families ──────────────────────────────────────────────────
 const FONT_BODY = "'Open Sans', sans-serif";
@@ -544,6 +558,15 @@ const componentOverrides = (mode: 'light' | 'dark'): ThemeOptions['components'] 
         colorWarning: { backgroundColor: taruviTokens.status.review, color: '#fff' },
         colorError: { backgroundColor: taruviTokens.error[600], color: '#fff' },
       },
+      // Tag-chip rotation palette (UI_Guidelines §3). Pick one explicitly
+      // (`variant="tagBlue"`) or compute via `colorForTag(name)` for
+      // deterministic per-name assignment.
+      variants: [
+        { props: { variant: 'tagBlue' as const },   style: { backgroundColor: '#E0F6FE', color: '#004369', textTransform: 'none' } },
+        { props: { variant: 'tagPurple' as const }, style: { backgroundColor: '#EDE7F6', color: '#4527A0', textTransform: 'none' } },
+        { props: { variant: 'tagGreen' as const },  style: { backgroundColor: '#E8F5E9', color: '#1B5E20', textTransform: 'none' } },
+        { props: { variant: 'tagOrange' as const }, style: { backgroundColor: '#FFF3E0', color: '#E65100', textTransform: 'none' } },
+      ],
     },
 
     // ─ Cards (16px radius, 28px padding, soft shadow)
@@ -762,6 +785,62 @@ const componentOverrides = (mode: 'light' | 'dark'): ThemeOptions['components'] 
       },
     },
 
+    // ─ DataGrid (mirrors MuiTable* styling so DataGrid-based list pages
+    //   and hand-rolled <Table> pages look identical — UI_Guidelines §4.7)
+    MuiDataGrid: {
+      styleOverrides: {
+        root: {
+          borderRadius: taruviTokens.radius.xl,                          // 12px
+          border: `1px solid ${dividerColor}`,
+          backgroundColor: isLight ? taruviTokens.surface.paper : '#11202a',
+          fontFamily: FONT_BODY,
+          fontSize: taruviTokens.fontSize.tableCell,                     // 13px
+          // No focus outlines on cells / rows — design uses subtle hover/selected fills instead
+          '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': { outline: 'none' },
+          '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': { outline: 'none' },
+        },
+        columnHeaders: {
+          backgroundColor: isLight ? taruviTokens.neutral[50] : 'rgba(255,255,255,0.04)',
+          borderBottom: `1px solid ${dividerColor}`,
+          minHeight: 44,
+          maxHeight: 44,
+          lineHeight: '44px',
+        },
+        columnHeaderTitle: {
+          fontFamily: FONT_TITLE,
+          fontSize: taruviTokens.fontSize.tableHead,                     // 11px
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: taruviTokens.letterSpacing.tableHead,
+          color: isLight ? taruviTokens.text.muted : taruviTokens.neutral[400],
+        },
+        cell: {
+          padding: taruviTokens.spacing.tableCell,                       // 12 16
+          borderBottom: `1px solid ${isLight ? taruviTokens.surface.borderTableRow : 'rgba(255,255,255,0.06)'}`,
+        },
+        row: {
+          '&:hover': {
+            backgroundColor: isLight ? taruviTokens.primary[50] : 'rgba(30,136,229,0.08)',
+          },
+          '&.Mui-selected': {
+            backgroundColor: isLight ? taruviTokens.primary[50] : 'rgba(30,136,229,0.12)',
+            boxShadow: `inset 2px 0 0 ${taruviTokens.button.primaryDefault}`,
+            '&:hover': {
+              backgroundColor: isLight ? taruviTokens.primary[100] : 'rgba(30,136,229,0.18)',
+            },
+          },
+        },
+        footerContainer: {
+          borderTop: `1px solid ${dividerColor}`,
+          minHeight: 44,
+        },
+        checkboxInput: {
+          color: isLight ? taruviTokens.neutral[400] : taruviTokens.neutral[500],
+          '&.Mui-checked': { color: taruviTokens.button.primaryDefault },
+        },
+      },
+    },
+
     // ─ Navigation (AppBar + Drawer)
     MuiAppBar: {
       defaultProps: { elevation: 0, color: 'inherit' },
@@ -953,6 +1032,46 @@ const componentOverrides = (mode: 'light' | 'dark'): ThemeOptions['components'] 
       },
     },
 
+    // ─ Accordion (collapsible section — UI_Guidelines §4.3)
+    // Flat by default: no shadow, no top divider line, no extra margin
+    // when expanded. Pair with `<ExpandMoreRoundedIcon />`.
+    MuiAccordion: {
+      defaultProps: { elevation: 0, disableGutters: true },
+      styleOverrides: {
+        root: {
+          boxShadow: 'none',
+          border: `1px solid ${dividerColor}`,
+          borderRadius: taruviTokens.radius.lg,
+          backgroundImage: 'none',
+          // Hide the default 1px line on top of every accordion
+          '&::before': { display: 'none' },
+          '&:not(:last-child)': { marginBottom: 8 },
+          '&.Mui-expanded': { margin: '0 0 8px 0' },
+        },
+      },
+    },
+    MuiAccordionSummary: {
+      styleOverrides: {
+        root: {
+          minHeight: 48,
+          fontFamily: FONT_BODY,
+          fontWeight: 600,
+          fontSize: taruviTokens.fontSize.formLabel,   // 13px
+          '&.Mui-expanded': { minHeight: 48 },
+        },
+        content: {
+          '&.Mui-expanded': { margin: '12px 0' },
+        },
+      },
+    },
+    MuiAccordionDetails: {
+      styleOverrides: {
+        root: {
+          padding: '0 16px 16px',
+        },
+      },
+    },
+
     // ─ Dialog / modal
     MuiDialog: {
       styleOverrides: {
@@ -976,6 +1095,17 @@ const componentOverrides = (mode: 'light' | 'dark'): ThemeOptions['components'] 
     },
     MuiDialogContent: {
       styleOverrides: { root: { padding: 0 } },
+    },
+    // Confirmation-dialog body (UI_Guidelines §4.8) — body2 size, secondary color
+    MuiDialogContentText: {
+      styleOverrides: {
+        root: {
+          fontFamily: FONT_BODY,
+          fontSize: taruviTokens.fontSize.p2,        // 14px
+          lineHeight: taruviTokens.lineHeight.body,
+          color: isLight ? taruviTokens.text.secondary : taruviTokens.neutral[300],
+        },
+      },
     },
     MuiDialogActions: {
       styleOverrides: {
@@ -1045,6 +1175,30 @@ const componentOverrides = (mode: 'light' | 'dark'): ThemeOptions['components'] 
       styleOverrides: {
         root: { borderRadius: taruviTokens.radius.sm, height: 6 },
         bar: { borderRadius: taruviTokens.radius.sm },
+      },
+    },
+    MuiCircularProgress: {
+      defaultProps: { color: 'primary' },
+      styleOverrides: {
+        root: {
+          // When used inline (e.g., inside a button), use `size={16}` per UI_Guidelines §4.10
+        },
+      },
+    },
+
+    // ─ Skeleton loader (UI_Guidelines §4.10)
+    MuiSkeleton: {
+      defaultProps: { animation: 'wave' },
+      styleOverrides: {
+        root: {
+          backgroundColor: isLight ? taruviTokens.neutral[100] : 'rgba(255,255,255,0.08)',
+        },
+        text: {
+          borderRadius: taruviTokens.radius.sm,
+        },
+        rounded: {
+          borderRadius: taruviTokens.radius.xl,
+        },
       },
     },
   };
