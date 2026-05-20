@@ -182,16 +182,23 @@ jobs:
           echo "ZIP file size: $ZIP_SIZE"
           echo "::notice::Created dist.zip ($ZIP_SIZE)"
 
-      - name: Deploy to Taruvi
-        id: deploy
-        uses: Taruvi-ai/taruvi-action@v1
+      - name: Deploy Frontend Worker
+        id: frontend
+        uses: Taruvi-ai/taruvi-action/frontend-worker@v1
         with:
           site-url: ${{ steps.config.outputs.site_url }}
           api-key: ${{ steps.config.outputs.api_key }}
           app-slug: ${{ steps.app_slug.outputs.app_slug }}
-          frontend-zip-path: dist.zip
-          backend-dir: .taruvi-backend
+          zip-path: dist.zip
           branch-name: ${{ steps.config.outputs.target_branch }}
+
+      - name: Import Backend Config
+        id: backend
+        uses: Taruvi-ai/taruvi-action/backend@v1
+        with:
+          site-url: ${{ steps.config.outputs.site_url }}
+          api-key: ${{ steps.config.outputs.api_key }}
+          config-dir: .taruvi-backend
 
       - name: Deployment Summary
         if: success()
@@ -204,10 +211,10 @@ jobs:
           echo "| **Source Branch** | ${{ github.event.pull_request.head.ref }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Target Branch** | ${{ steps.config.outputs.target_branch }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **App Slug** | ${{ steps.app_slug.outputs.app_slug }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Worker Slug** | ${{ steps.deploy.outputs.worker-slug }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Deploy Type** | ${{ steps.deploy.outputs.deploy-type }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Frontend URL** | ${{ steps.deploy.outputs.frontend-url }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Backend Import** | ${{ steps.deploy.outputs.backend-imported }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Worker Slug** | ${{ steps.frontend.outputs.worker-slug }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Deploy Type** | ${{ steps.frontend.outputs.deploy-type }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Frontend URL** | ${{ steps.frontend.outputs.frontend-url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Backend Import** | ${{ steps.backend.outputs.status }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Commit** | ${{ github.event.pull_request.merge_commit_sha }} |" >> $GITHUB_STEP_SUMMARY
 
       - name: Failure Summary
