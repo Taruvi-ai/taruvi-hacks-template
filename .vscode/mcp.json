@@ -3,21 +3,28 @@
     {
       "id": "taruvi-site-url",
       "type": "promptString",
-      "description": "Taruvi site URL (e.g. https://tenant.taruvi.cloud)",
+      "description": "Taruvi site URL",
       "default": "${env:TARUVI_SITE_URL}"
     },
     {
       "id": "taruvi-api-key",
       "type": "promptString",
-      "description": "Taruvi API Key",
+      "description": "Taruvi API key",
       "password": true,
       "default": "${env:TARUVI_API_KEY}"
     },
     {
       "id": "taruvi-app-slug",
       "type": "promptString",
-      "description": "Taruvi App Slug",
+      "description": "Taruvi app slug",
       "default": "${env:TARUVI_APP_SLUG}"
+    },
+    {
+      "id": "context7-api-key",
+      "type": "promptString",
+      "description": "Context7 API key",
+      "password": true,
+      "default": "${env:CONTEXT7_API_KEY}"
     }
   ],
   "servers": {
@@ -30,7 +37,7 @@
     },
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp", "--api-key", "ctx7sk-b07da0a5-b392-4e88-8b99-095b7190feea"]
+      "args": ["-y", "@upstash/context7-mcp", "--api-key", "${input:context7-api-key}"]
     }
   }
 }

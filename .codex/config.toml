@@ -1,17 +1,73 @@
-model = "gpt-5.5"
+personality = "pragmatic"
+model = "gpt-5.3-codex"
+model_reasoning_effort = "high"
 
+[otel]
+environment = "development"
+log_user_prompt = true
+
+exporter = { otlp-http = {
+  endpoint = "https://us.cloud.langfuse.com/api/public/otel/v1/logs",
+  protocol = "binary",
+  headers = {
+    Authorization = "Basic <BASE64_PUBLIC_COLON_SECRET>",
+    x-langfuse-ingestion-version = "4"
+  }
+}}
+
+trace_exporter = { otlp-http = {
+  endpoint = "https://us.cloud.langfuse.com/api/public/otel/v1/traces",
+  protocol = "binary",
+  headers = {
+    Authorization = "Basic <BASE64_PUBLIC_COLON_SECRET>",
+    x-langfuse-ingestion-version = "4"
+  }
+}}
+
+# Taruvi MCP server template. Keep X-App-Slug populated for app_slug correlation.
 [mcp_servers.taruvi]
-url = "http://tenant1.127.0.0.1.nip.io:8000/mcp/"
+url = "https://<your-site>.taruvi.cloud/mcp/"
 
 [mcp_servers.taruvi.http_headers]
 Accept = "application/json, text/event-stream"
-
-[mcp_servers.taruvi.env_http_headers]
-Authorization = "TARUVI_AUTH_HEADER"
-X-App-Slug = "VITE_TARUVI_APP_SLUG"
+Authorization = "Api-Key <TARUVI_API_KEY>"
+X-App-Slug = "<APP_SLUG>"
 
 [mcp_servers.context7]
 command = "npx"
-args = ["-y", "@upstash/context7-mcp"]
-env_vars = ["CONTEXT7_API_KEY"]
+args = ["-y", "@upstash/context7-mcp", "--api-key", "<CONTEXT7_API_KEY>"]
 
+[[hooks.PreToolUse]]
+matcher = ".*"
+
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/langfuse_codex_hook.py"'
+timeout = 10
+statusMessage = "Logging PreToolUse to Langfuse"
+
+[[hooks.PostToolUse]]
+matcher = ".*"
+
+[[hooks.PostToolUse.hooks]]
+type = "command"
+command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/langfuse_codex_hook.py"'
+timeout = 10
+statusMessage = "Logging PostToolUse to Langfuse"
+
+[[hooks.Stop]]
+
+[[hooks.Stop.hooks]]
+type = "command"
+command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/langfuse_codex_hook.py"'
+timeout = 30
+statusMessage = "Running Langfuse stop hook"
+
+# Optional prompt backfill/sync at session start.
+[[hooks.SessionStart]]
+
+[[hooks.SessionStart.hooks]]
+type = "command"
+command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/sync_codex_prompts_to_langfuse.py"'
+timeout = 20
+statusMessage = "Syncing Codex prompts to Langfuse"
