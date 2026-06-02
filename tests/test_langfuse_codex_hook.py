@@ -13,6 +13,12 @@ assert spec is not None and spec.loader is not None
 hook = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hook)
 
+PROMPT_SYNC_PATH = ROOT / ".codex" / "hooks" / "sync_codex_prompts_to_langfuse.py"
+prompt_sync_spec = importlib.util.spec_from_file_location("sync_codex_prompts_to_langfuse", PROMPT_SYNC_PATH)
+assert prompt_sync_spec is not None and prompt_sync_spec.loader is not None
+prompt_sync = importlib.util.module_from_spec(prompt_sync_spec)
+prompt_sync_spec.loader.exec_module(prompt_sync)
+
 
 class LangfuseTraceCorrelationTests(unittest.TestCase):
     def test_session_id_correlation_overrides_fallback_and_persists(self) -> None:
@@ -111,6 +117,42 @@ class LangfuseTraceCorrelationTests(unittest.TestCase):
         )
         self.assertEqual(summary_output["app_slug"], "kj_test")
         self.assertEqual(summary_output["current_stage"], "final_summary")
+
+    def test_app_slug_prefers_env_local_taruvi_slug_and_ignores_placeholders(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            (root / ".codex").mkdir(parents=True, exist_ok=True)
+            (root / ".env").write_text(
+                "X_APP_SLUG=<your-app-slug>\nAPP_SLUG=env_app\n",
+                encoding="utf-8",
+            )
+            (root / ".env.local").write_text(
+                "TARUVI_APP_SLUG=env_local_taruvi_app\n",
+                encoding="utf-8",
+            )
+            (root / ".codex" / "config.toml").write_text(
+                '[mcp_servers.taruvi.http_headers]\nX-App-Slug = "<APP_SLUG>"\n',
+                encoding="utf-8",
+            )
+
+            self.assertEqual(hook.resolve_app_slug(root), "env_local_taruvi_app")
+            self.assertEqual(prompt_sync.resolve_app_slug(root), "env_local_taruvi_app")
+
+    def test_app_slug_falls_back_past_placeholders_to_project_slug(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            (root / ".codex").mkdir(parents=True, exist_ok=True)
+            (root / ".env").write_text(
+                "TARUVI_APP_SLUG=<your-app-slug>\nAPP_SLUG=\n",
+                encoding="utf-8",
+            )
+            (root / ".codex" / "config.toml").write_text(
+                '[mcp_servers.taruvi.http_headers]\nX-App-Slug = "<APP_SLUG>"\n',
+                encoding="utf-8",
+            )
+
+            self.assertEqual(hook.resolve_app_slug(root), root.name)
+            self.assertEqual(prompt_sync.resolve_app_slug(root), root.name)
 
 
 if __name__ == "__main__":

@@ -13,11 +13,14 @@
 - `SessionStart` -> `sync_codex_prompts_to_langfuse.py`
 
 ## app_slug extraction order
-1. `.env` `X_APP_SLUG`
-2. `.env` `APP_SLUG`
-3. `.env` `VITE_APP_SLUG`
-4. `.codex/config.toml` `X-App-Slug`
-5. fallback `project_slug`
+1. `.env.local` / `.env` `TARUVI_APP_SLUG`
+2. `.env.local` / `.env` `VITE_TARUVI_APP_SLUG`
+3. `.env.local` / `.env` `X_APP_SLUG`
+4. `.env.local` / `.env` `APP_SLUG`
+5. `.env.local` / `.env` `VITE_APP_SLUG`
+6. process env values for the same keys
+7. `.codex/config.toml` `X-App-Slug`
+8. fallback `project_slug`
 
 ## Prompt sync
 Prompt sync reads Codex user prompts from:

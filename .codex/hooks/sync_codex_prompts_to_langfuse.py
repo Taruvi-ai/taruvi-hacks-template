@@ -26,6 +26,13 @@ CODEX_CONFIG_PATH = Path(".codex") / "config.toml"
 REQUEST_TIMEOUT_SEC = 10
 PROMPT_PREVIEW_MAX = 4000
 DEBUG_BODY_MAX = 6000
+APP_SLUG_KEYS = (
+    "TARUVI_APP_SLUG",
+    "VITE_TARUVI_APP_SLUG",
+    "X_APP_SLUG",
+    "APP_SLUG",
+    "VITE_APP_SLUG",
+)
 
 
 def now_iso() -> str:
@@ -38,6 +45,11 @@ def project_root() -> Path:
 
 def project_slug(root: Path) -> str:
     return root.name
+
+
+def is_placeholder_value(value: str) -> bool:
+    text = value.strip()
+    return not text or (text.startswith("<") and text.endswith(">"))
 
 
 def extract_app_slug_from_codex_config(config_path: Path) -> str | None:
@@ -60,15 +72,17 @@ def extract_app_slug_from_codex_config(config_path: Path) -> str | None:
     if not key_match:
         return None
     value = key_match.group(1).strip()
-    return value or None
+    return None if is_placeholder_value(value) else value
 
 
 def resolve_app_slug(root: Path) -> str:
+    dotenv_local = parse_dotenv(root / ".env.local")
     dotenv = parse_dotenv(root / ".env")
-    for key in ("X_APP_SLUG", "APP_SLUG", "VITE_APP_SLUG"):
-        value = str(dotenv.get(key) or "").strip()
-        if value:
-            return value
+    for source in (dotenv_local, dotenv, os.environ):
+        for key in APP_SLUG_KEYS:
+            value = str(source.get(key) or "").strip()
+            if not is_placeholder_value(value):
+                return value
     config_value = extract_app_slug_from_codex_config(root / CODEX_CONFIG_PATH)
     if config_value:
         return config_value
