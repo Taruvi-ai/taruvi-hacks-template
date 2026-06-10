@@ -3,9 +3,10 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-function openCodexLayout() {
-  vscode.commands.executeCommand('workbench.action.closePanel');
-  vscode.commands.executeCommand('chatgpt.openSidebar');
+function launchCodexTerminal() {
+  const terminal = vscode.window.createTerminal({ name: 'Codex' });
+  terminal.sendText('bash -c \'set -a; [ -f .env ] && source .env; set +a; codex\'');
+  terminal.show();
 }
 
 exports.activate = function (context) {
@@ -15,32 +16,27 @@ exports.activate = function (context) {
   const marker   = path.join(workspaceRoot, '.codespace', '.setup-complete');
   const authFile = path.join(os.homedir(), '.config', 'openai', 'auth.json');
 
-  // Setup already done and auth is in place — open Codex with panel closed.
+  // Setup done and auth ready — launch Codex terminal immediately.
   if (fs.existsSync(marker) && fs.existsSync(authFile)) {
-    openCodexLayout();
+    launchCodexTerminal();
     return;
   }
 
   // Setup done but auth.json not yet on disk — write-codex-auth.sh runs in
-  // postStartCommand in parallel with VS Code loading, so it may still be in
-  // flight. Poll up to 20 s for the file to appear, then reload once so the
-  // openai.chatgpt extension starts with auth already on disk.
-  // After the reload the first branch above fires, so there is no loop.
+  // postStartCommand in parallel with VS Code loading, so it may still be
+  // in flight. Poll up to 20 s; launch terminal once it appears.
   if (fs.existsSync(marker)) {
     const AUTH_WAIT_MS = 20000;
     const authStarted  = Date.now();
-    let reloaded = false;
+    let launched = false;
 
     const authInterval = setInterval(() => {
       if (fs.existsSync(authFile)) {
         clearInterval(authInterval);
-        if (!reloaded) {
-          reloaded = true;
-          setTimeout(() => vscode.commands.executeCommand('workbench.action.reloadWindow'), 500);
-        }
+        if (!launched) { launched = true; launchCodexTerminal(); }
       } else if (Date.now() - authStarted > AUTH_WAIT_MS) {
         clearInterval(authInterval);
-        vscode.commands.executeCommand('chatgpt.openSidebar');
+        if (!launched) { launched = true; launchCodexTerminal(); }
       }
     }, 500);
 
@@ -48,26 +44,29 @@ exports.activate = function (context) {
     return;
   }
 
-  // First attach: setup still running. Poll for both markers, then reload so
-  // the openai.chatgpt extension starts with auth.json already on disk.
+  // First attach: setup still running. Poll until setup + auth are both ready,
+  // then launch terminal. Falls back to launching without auth after 10 min.
   const POLL_MS    = 2000;
   const TIMEOUT_MS = 10 * 60 * 1000;
   const started    = Date.now();
+  let launched = false;
 
   const interval = setInterval(() => {
-    if (fs.existsSync(marker) && fs.existsSync(authFile)) {
+    const markerReady = fs.existsSync(marker);
+    const authReady   = fs.existsSync(authFile);
+
+    if (markerReady) {
       clearInterval(interval);
-      setTimeout(() => {
-        vscode.commands.executeCommand('workbench.action.reloadWindow');
-      }, 1500);
-    } else if (fs.existsSync(marker) && !fs.existsSync(authFile)) {
-      // Setup finished but auth hasn't appeared yet — hand off to the
-      // auth-wait loop above by reloading (the second branch will pick it up).
-      clearInterval(interval);
-      setTimeout(() => vscode.commands.executeCommand('workbench.action.reloadWindow'), 500);
+      if (authReady) {
+        if (!launched) { launched = true; launchCodexTerminal(); }
+      } else {
+        // Auth may still be writing — hand off to auth-wait above by
+        // reloading so the second branch picks it up cleanly.
+        setTimeout(() => vscode.commands.executeCommand('workbench.action.reloadWindow'), 500);
+      }
     } else if (Date.now() - started > TIMEOUT_MS) {
       clearInterval(interval);
-      vscode.commands.executeCommand('chatgpt.openSidebar');
+      if (!launched) { launched = true; launchCodexTerminal(); }
     }
   }, POLL_MS);
 
