@@ -8,12 +8,24 @@
 set -uo pipefail
 
 MARKER=".codespace/.setup-complete"
+CREATE_MARKER=".codespace/.create-complete"
 ENV_FILE=".env"
 
 # ── Prerequisites ──────────────────────────────────────────────────────────────
 [ -f .mcp.json ]   || cp .mcp.example.json .mcp.json
 [ -f "$ENV_FILE" ] || cp .env.example "$ENV_FILE"
 mkdir -p .codex/projects .codespace
+
+# ── Wait for postCreateCommand to finish ──────────────────────────────────────
+# GitHub marks the codespace Available before postCreateCommand completes, so
+# postAttachCommand can fire while npm install is still running. Wait here.
+if [ ! -f "$CREATE_MARKER" ]; then
+  echo "  ⏳  Waiting for container initialisation to complete..."
+  until [ -f "$CREATE_MARKER" ]; do
+    sleep 3
+  done
+  echo "  ✅  Container ready."
+fi
 
 # ── Path B: pre-injected Codespace environment variables ──────────────────────
 # When github-inject-secrets runs successfully the Build-a-thon platform injects

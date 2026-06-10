@@ -9,7 +9,7 @@
   "remoteEnv": {
     "CODEX_HOME": "${containerWorkspaceFolder}/.codex"
   },
-  "postCreateCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects; source /usr/local/share/nvm/nvm.sh; nvm install 22; nvm use 22; npm install --legacy-peer-deps; command -v codex >/dev/null 2>&1 || npm install -g @openai/codex; mkdir -p ~/.vscode-server/extensions/taruvi.open-codex-0.0.1; cp -r .devcontainer/open-codex/. ~/.vscode-server/extensions/taruvi.open-codex-0.0.1/'",
+  "postCreateCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects .codespace; source /usr/local/share/nvm/nvm.sh; nvm install 22; nvm use 22; npm install --legacy-peer-deps; command -v codex >/dev/null 2>&1 || npm install -g @openai/codex; mkdir -p ~/.vscode-server/extensions/taruvi.open-codex-0.0.1; cp -r .devcontainer/open-codex/. ~/.vscode-server/extensions/taruvi.open-codex-0.0.1/ && touch .codespace/.create-complete'",
   "postStartCommand": {
     "app": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects .codespace; source /usr/local/share/nvm/nvm.sh 2>/dev/null || true; nvm use 22 --silent 2>/dev/null || true; nohup npm run dev -- --host 0.0.0.0 --port 5173 >> /tmp/vite.log 2>&1 & disown'",
     "auth": "bash -lc 'bash scripts/write-codex-auth.sh 2>/dev/null || true'"
