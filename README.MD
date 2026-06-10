@@ -1,78 +1,55 @@
-# Taruvi Hackathon Template (Refine v5)
+# Welcome to the Taruvi Build-a-thon
 
-This repository is the official starter template for Taruvi hackathons.
+Your environment is fully automated — no setup required.
 
-It includes:
-- A Refine v5 + React app scaffold
-- GitHub Codespaces-ready devcontainer setup
-- Guided Codex startup flow for required Taruvi environment variables
-- MCP configuration for Taruvi + helpful developer tools
+Give it a minute to finish loading, then Codex will open and you can start building straight away.
 
-## Who This Is For
+---
 
-- **Participants**: use this template to start building quickly in Codespaces.
-- **Organizers/Mentors**: use this for standardized onboarding across teams.
+## What's happening in the background
 
-## Hackathon Flow
+When your codespace starts, it automatically:
 
-### Organizer-side (Advanced setup)
-1. Sign up for GitHub Codespaces in Advanced.
-2. Create sites for each group based on color coding in Advanced.
-3. Ensure participants accept their Taruvi Console invite.
+- Configures your Taruvi credentials and MCP tools
+- Authenticates Codex with your AI provider key
+- Starts the dev server and opens a live preview of your app
 
-### Participant-side setup
-0. In Taruvi Console, create your app and collect:
-   - `TARUVI_SITE_URL` (site URL)
-   - `TARUVI_API_KEY`
-   - `TARUVI_APP_SLUG`
-1. Open this repo when the hackathon starts:
-   - https://github.com/Taruvi-ai/taruvi-hacks-template
-2. Create a GitHub Codespace (first load is usually ~2.5 minutes).
-3. Open `.env`, paste your `TARUVI_SITE_URL`, `TARUVI_APP_SLUG`, and `TARUVI_API_KEY`, then save.
+No terminal commands needed.
 
-## Codespaces Behavior (Important)
+---
 
-When Codex starts in the devcontainer:
-- It verifies required Taruvi env vars are present.
-- If missing, it asks you to update `.env` with `TARUVI_SITE_URL`, `TARUVI_APP_SLUG`, and `TARUVI_API_KEY`.
-- It writes `.codex/config.toml` with resolved Taruvi values.
-- It attempts to install the Codex VS Code extension.
-- It launches Codex after setup is complete.
+## Start building
 
-## Updating Config Later
+Once Codex opens in the sidebar, just describe what you want to build and it will help you get there.
 
-If you change your Taruvi site, app slug, or API key later:
-1. Edit `.env`
-2. Update `TARUVI_SITE_URL`, `TARUVI_APP_SLUG`, or `TARUVI_API_KEY`
-3. Run `npm run codex:refresh`
-4. Restart Codex if needed
+Your app is a React + MUI application connected to your Taruvi backend. Ask Codex to scaffold pages, add features, connect to data, or explain any part of the code.
 
-## Security Notes
+---
 
-- `OPENAI_API_KEY` is injected via GitHub Codespaces secrets and must **never be committed** to the repository.
-- If a key was ever committed accidentally, rotate/revoke it immediately in the OpenAI dashboard.
+## Status bar buttons
 
-## Local Commands
+If anything needs attention, the buttons at the bottom of VS Code have you covered:
 
-```bash
-npm run dev
-npm run build
-npm run start
-```
+| Button | What it does |
+|--------|--------------|
+| ⚙️ **Reopen .env** | View or update your Taruvi credentials |
+| 🔁 **Retry Setup** | Re-run setup if something did not load correctly |
+| 👁️ **Open Preview** | Open your app preview inside VS Code |
+| 🤖 **Codex CLI** | Launch Codex in the terminal |
+| 🚀 **Deploy** | Deploy your app to Taruvi Cloud |
 
-## Tech Stack
+---
 
-- [Refine](https://refine.dev)
-- React + TypeScript
-- MUI
-- Taruvi Providers + Taruvi MCP integration
+## Deploying
 
-## Learn More
+When you're ready to ship, click **🚀 Deploy** in the status bar. Your app will be built and deployed to Taruvi Cloud automatically.
 
-- [Refine Docs](https://refine.dev/docs)
-- [Refine Data Provider Docs](https://refine.dev/docs/core/providers/data-provider/#overview)
-- [Refine MUI Docs](https://refine.dev/docs/ui-frameworks/mui/tutorial/)
+---
 
-## License
+## Troubleshooting
 
-MIT
+**Codex did not open** — wait a full minute, then click **🔁 Retry Setup**.
+
+**App preview is not showing** — click **👁️ Open Preview**.
+
+**Chrome shows "Pages Unresponsive" when Codex loads** — click **Wait**, it will finish loading in a moment.
