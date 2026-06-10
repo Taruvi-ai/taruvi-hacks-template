@@ -1,20 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-URL="https://${CODESPACE_NAME}-5173.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+if [ -z "${CODESPACE_NAME:-}" ]; then
+  echo "Not running in a Codespace — open http://localhost:5173 in your browser."
+  exit 0
+fi
+
+URL="https://${CODESPACE_NAME}-5173.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-app.github.dev}"
 
 echo ""
-echo "  ┌─────────────────────────────────────────────────────────────┐"
-echo "  │  Preview URL:                                                │"
-echo "  │                                                             │"
-echo "  │  ${URL}"
-echo "  │                                                             │"
-echo "  │  The preview normally opens automatically inside VS Code    │"
-echo "  │  when setup completes. If it did not:                       │"
-echo "  │                                                             │"
-echo "  │  1. Open the URL above in a browser tab.                    │"
-echo "  │  2. Log in there once.                                       │"
-echo "  │  3. Return to Codespaces. The Simple Browser preview        │"
-echo "  │     will reflect your session.                              │"
-echo "  └─────────────────────────────────────────────────────────────┘"
+echo "  Opening preview: $URL"
 echo ""
+
+# Opens in VS Code's Simple Browser panel.
+code --open-url "$URL" 2>/dev/null || echo "  If preview did not open, visit the URL above in a browser tab."

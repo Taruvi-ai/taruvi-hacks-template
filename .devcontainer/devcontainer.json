@@ -1,6 +1,8 @@
 {
   "name": "taruvi-refine-template",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bullseye",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "hostRequirements": {
     "cpus": 4,
     "memory": "16gb",
@@ -9,9 +11,9 @@
   "remoteEnv": {
     "CODEX_HOME": "${containerWorkspaceFolder}/.codex"
   },
-  "postCreateCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects .codespace; npm install --legacy-peer-deps; command -v codex >/dev/null 2>&1 || npm install -g @openai/codex; mkdir -p ~/.vscode-server/extensions/taruvi.open-codex-0.0.1; cp -r .devcontainer/open-codex/. ~/.vscode-server/extensions/taruvi.open-codex-0.0.1/ && touch .codespace/.create-complete'",
+  "postCreateCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects .codespace; npm install --legacy-peer-deps; mkdir -p ~/.vscode-server/extensions/taruvi.open-codex-0.0.1; cp -r .devcontainer/open-codex/. ~/.vscode-server/extensions/taruvi.open-codex-0.0.1/ && touch .codespace/.create-complete'",
   "postStartCommand": {
-    "app": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects .codespace; nohup npm run dev -- --host 0.0.0.0 --port 5173 >> /tmp/vite.log 2>&1 & disown'",
+    "app": "bash -lc 'mkdir -p .codex/projects .codespace; nohup npm run dev -- --host 0.0.0.0 --port 5173 >> /tmp/vite.log 2>&1 & disown'",
     "auth": "bash -lc 'bash scripts/write-codex-auth.sh >> /tmp/codex-auth.log 2>&1 || true'"
   },
   "postAttachCommand": {
@@ -21,7 +23,7 @@
   "portsAttributes": {
     "5173": {
       "label": "Taruvi Buildathon App",
-      "onAutoForward": "openBrowserOnce"
+      "onAutoForward": "openPreview"
     }
   },
   "customizations": {
@@ -42,35 +44,39 @@
         },
         "editor.minimap.enabled": false,
         "actionButtons": {
-          "defaultColor": "#ffffff",
           "loadNpmCommands": false,
           "commands": [
             {
               "name": "⚙️ Reopen .env",
+              "color": "#4EC9B0",
               "singleInstance": true,
               "command": "code .env",
               "tooltip": "Reopen the .env file to check or update your Taruvi credentials"
             },
             {
               "name": "🔁 Retry Setup",
+              "color": "#CE9178",
               "singleInstance": true,
               "command": "bash scripts/start-codex-devcontainer.sh --non-interactive",
               "tooltip": "Re-run Taruvi MCP and Codex configuration (use if setup failed or credentials changed)"
             },
             {
               "name": "👁️ Open Preview",
+              "color": "#9CDCFE",
               "singleInstance": false,
               "command": "bash scripts/open-preview.sh",
-              "tooltip": "Open the app preview — log in via the browser tab first if prompted"
+              "tooltip": "Open the app preview in VS Code's Simple Browser"
             },
             {
               "name": "🤖 Codex CLI",
+              "color": "#DCDCAA",
               "singleInstance": true,
               "command": "bash -c 'set -a; [ -f .env ] && source .env; set +a; exec codex'",
               "tooltip": "Launch Codex CLI — sources .env so no manual key entry is needed"
             },
             {
               "name": "🚀 Deploy",
+              "color": "#569CD6",
               "singleInstance": true,
               "command": "node scripts/deploy.mjs",
               "tooltip": "Deploy your app to Taruvi Cloud"
