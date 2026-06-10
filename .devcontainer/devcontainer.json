@@ -1,17 +1,16 @@
 {
   "name": "taruvi-refine-template",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bullseye",
   "hostRequirements": {
     "cpus": 4,
     "memory": "16gb",
     "storage": "32gb"
   },
   "remoteEnv": {
-    "CODEX_HOME": "${containerWorkspaceFolder}/.codex"
+    "CODEX_HOME": "${containerWorkspaceFolder}/.codex",
+    "PATH": "${containerWorkspaceFolder}/node_modules/.bin:${containerEnv:PATH}"
   },
-  "postCreateCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects .codespace; npm install --legacy-peer-deps; mkdir -p ~/.vscode-server/extensions/taruvi.open-codex-0.0.1; cp -r .devcontainer/open-codex/. ~/.vscode-server/extensions/taruvi.open-codex-0.0.1/ && touch .codespace/.create-complete'",
+  "postCreateCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects .codespace; npm install --legacy-peer-deps; mkdir -p ~/.vscode-server/extensions/taruvi.open-codex-0.0.1; cp -r .devcontainer/open-codex/. ~/.vscode-server/extensions/taruvi.open-codex-0.0.1/ && touch .codespace/.create-complete && echo \"✅ Setup complete\"'",
   "postStartCommand": {
     "app": "bash -lc 'mkdir -p .codex/projects .codespace; nohup npm run dev -- --host 0.0.0.0 --port 5173 >> /tmp/vite.log 2>&1 & disown'",
     "auth": "bash -lc 'bash scripts/write-codex-auth.sh >> /tmp/codex-auth.log 2>&1 || true'"
