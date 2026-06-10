@@ -3,10 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-function launchCodexTerminal() {
-  const terminal = vscode.window.createTerminal({ name: 'Codex' });
-  terminal.sendText('bash -c \'set -a; [ -f .env ] && source .env; set +a; codex\'');
-  terminal.show();
+function openCodexLayout() {
+  vscode.commands.executeCommand('workbench.action.closePanel');
+  vscode.commands.executeCommand('chatgpt.openSidebar');
 }
 
 exports.activate = function (context) {
@@ -16,27 +15,33 @@ exports.activate = function (context) {
   const marker   = path.join(workspaceRoot, '.codespace', '.setup-complete');
   const authFile = path.join(os.homedir(), '.config', 'openai', 'auth.json');
 
-  // Setup done and auth ready — launch Codex terminal immediately.
+  // Setup done and auth ready — open Codex sidebar with panel closed.
   if (fs.existsSync(marker) && fs.existsSync(authFile)) {
-    launchCodexTerminal();
+    openCodexLayout();
     return;
   }
 
   // Setup done but auth.json not yet on disk — write-codex-auth.sh runs in
   // postStartCommand in parallel with VS Code loading, so it may still be
-  // in flight. Poll up to 20 s; launch terminal once it appears.
+  // in flight. Poll up to 20 s; reload once when it appears so
+  // openai.chatgpt starts fresh with auth.json on disk.
+  // After the reload the first branch fires — no loop possible.
   if (fs.existsSync(marker)) {
     const AUTH_WAIT_MS = 20000;
     const authStarted  = Date.now();
-    let launched = false;
+    let reloaded = false;
 
     const authInterval = setInterval(() => {
       if (fs.existsSync(authFile)) {
         clearInterval(authInterval);
-        if (!launched) { launched = true; launchCodexTerminal(); }
+        if (!reloaded) {
+          reloaded = true;
+          setTimeout(() => vscode.commands.executeCommand('workbench.action.reloadWindow'), 500);
+        }
       } else if (Date.now() - authStarted > AUTH_WAIT_MS) {
         clearInterval(authInterval);
-        if (!launched) { launched = true; launchCodexTerminal(); }
+        // Auth never arrived — open sidebar anyway (user may sign in manually).
+        vscode.commands.executeCommand('chatgpt.openSidebar');
       }
     }, 500);
 
@@ -44,12 +49,11 @@ exports.activate = function (context) {
     return;
   }
 
-  // First attach: setup still running. Poll until setup + auth are both ready,
-  // then launch terminal. Falls back to launching without auth after 10 min.
+  // First attach: setup still running. Poll until both markers are ready,
+  // then reload so openai.chatgpt starts with auth.json already on disk.
   const POLL_MS    = 2000;
   const TIMEOUT_MS = 10 * 60 * 1000;
   const started    = Date.now();
-  let launched = false;
 
   const interval = setInterval(() => {
     const markerReady = fs.existsSync(marker);
@@ -58,15 +62,15 @@ exports.activate = function (context) {
     if (markerReady) {
       clearInterval(interval);
       if (authReady) {
-        if (!launched) { launched = true; launchCodexTerminal(); }
+        setTimeout(() => vscode.commands.executeCommand('workbench.action.reloadWindow'), 1500);
       } else {
-        // Auth may still be writing — hand off to auth-wait above by
-        // reloading so the second branch picks it up cleanly.
+        // Setup finished but auth not yet present — reload so the
+        // auth-wait branch above picks it up after the window comes back.
         setTimeout(() => vscode.commands.executeCommand('workbench.action.reloadWindow'), 500);
       }
     } else if (Date.now() - started > TIMEOUT_MS) {
       clearInterval(interval);
-      if (!launched) { launched = true; launchCodexTerminal(); }
+      vscode.commands.executeCommand('chatgpt.openSidebar');
     }
   }, POLL_MS);
 
