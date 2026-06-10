@@ -4,12 +4,16 @@ const path = require('path');
 const os = require('os');
 
 function openCodexLayout() {
-  // Delay so VS Code finishes initialising before we open the sidebar —
-  // calling chatgpt.openSidebar too early freezes the browser tab.
+  // Delay so VS Code finishes initialising before we open the sidebar.
+  // The ChatGPT webview is heavy — Chrome may show "Pages Unresponsive"
+  // on first load; clicking Wait will let it finish.
   setTimeout(() => {
+    vscode.window.showInformationMessage(
+      'Codex is loading. If Chrome shows "Pages Unresponsive" — click Wait, it will finish loading.'
+    );
     vscode.commands.executeCommand('workbench.action.closePanel');
     vscode.commands.executeCommand('chatgpt.openSidebar');
-  }, 2500);
+  }, 5000);
 }
 
 exports.activate = function (context) {
