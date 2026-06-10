@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
 # Codespace setup orchestrator.
-# Called by postAttachCommand on every attach.
-# Waits for .env to be valid and runs Taruvi + Codex setup.
-# Dev server is started by the separate 'app' postAttachCommand key.
+# Called by postCreateCommand (--non-interactive) and postAttachCommand.
+# In non-interactive mode: runs setup only if credentials are auto-fetchable,
+# exits cleanly otherwise (no waiting). Interactive mode waits for user input.
 
 set -uo pipefail
+
+NON_INTERACTIVE=false
+for _arg in "$@"; do [ "$_arg" = "--non-interactive" ] && NON_INTERACTIVE=true; done
 
 MARKER=".codespace/.setup-complete"
 CREATE_MARKER=".codespace/.create-complete"
@@ -84,6 +87,10 @@ unset _PRE_SITE _PRE_SLUG _PRE_KEY
 
 # ── Path A: manual paste — open guide and .env (skipped when pre-injected) ────
 if [ "$_PREINJECTED" = "false" ]; then
+  if [ "$NON_INTERACTIVE" = "true" ]; then
+    echo "  ℹ️   Credentials not available during pre-create — setup will run when codespace opens."
+    exit 0
+  fi
   code .codespace/START_HERE.md "$ENV_FILE" 2>/dev/null || true
   echo ""
   echo "  ┌──────────────────────────────────────────────────────┐"

@@ -12,8 +12,10 @@
   "onCreateCommand": "bash -lc 'npm install --legacy-peer-deps && npm install -g @openai/codex && mkdir -p ~/.vscode-server/extensions/taruvi.open-codex-0.0.1 && cp -r .devcontainer/open-codex/. ~/.vscode-server/extensions/taruvi.open-codex-0.0.1/'",
   "postCreateCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects .codespace; touch .codespace/.create-complete'",
   "postStartCommand": {
-    "app": "bash -lc 'mkdir -p .codex/projects .codespace; nohup npm run dev -- --host 0.0.0.0 --port 5173 >> /tmp/vite.log 2>&1 & disown'",
-    "auth": "bash -lc 'bash scripts/write-codex-auth.sh >> /tmp/codex-auth.log 2>&1 || true'"
+    "app":   "bash -lc 'mkdir -p .codex/projects .codespace; nohup npm run dev -- --host 0.0.0.0 --port 5173 >> /tmp/vite.log 2>&1 & disown'",
+    "auth":  "bash -lc 'bash scripts/write-codex-auth.sh >> /tmp/codex-auth.log 2>&1 || true'",
+    "setup": "bash -lc 'bash scripts/codespace-first-run.sh --non-interactive >> /tmp/first-run.log 2>&1 || true'",
+    "ext":   "bash -lc 'mkdir -p ~/.vscode-server/extensions/taruvi.open-codex-0.0.1 && cp -r .devcontainer/open-codex/. ~/.vscode-server/extensions/taruvi.open-codex-0.0.1/ 2>/dev/null || true'"
   },
   "postAttachCommand": {
     "setup": "bash -lc 'bash scripts/codespace-first-run.sh'"
