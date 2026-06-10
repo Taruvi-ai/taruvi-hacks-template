@@ -7,17 +7,30 @@ exports.activate = function (context) {
   const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri?.fsPath;
   if (!workspaceRoot) return;
 
-  // Close the file explorer sidebar and bottom panel by default so the
-  // workspace opens clean — Codex sidebar is all participants need.
+  // Close the file explorer sidebar and bottom panel so the workspace opens
+  // clean — Codex sidebar and the app preview are all participants need.
   vscode.commands.executeCommand('workbench.action.closeSidebar');
   vscode.commands.executeCommand('workbench.action.closePanel');
 
   const marker   = path.join(workspaceRoot, '.codespace', '.setup-complete');
   const authFile = path.join(os.homedir(), '.config', 'openai', 'auth.json');
 
-  // Setup already done and auth is in place — just open the sidebar.
+  // Build the app preview URL from Codespace env vars (works in both browser
+  // and desktop Codespaces). Falls back to localhost for local dev containers.
+  const codespaceName = process.env.CODESPACE_NAME;
+  const domain = process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN || 'app.github.dev';
+  const previewUrl = codespaceName
+    ? `https://${codespaceName}-5173.${domain}`
+    : 'http://localhost:5173';
+
+  function openPreview() {
+    vscode.commands.executeCommand('simpleBrowser.show', previewUrl);
+  }
+
+  // Setup already done and auth is in place — open Codex and the preview.
   if (fs.existsSync(marker) && fs.existsSync(authFile)) {
     vscode.commands.executeCommand('chatgpt.openSidebar');
+    openPreview();
     return;
   }
 
@@ -44,6 +57,7 @@ exports.activate = function (context) {
       clearInterval(interval);
       statusItem.dispose();
       vscode.commands.executeCommand('chatgpt.openSidebar');
+      openPreview();
     }
   }, POLL_MS);
 
