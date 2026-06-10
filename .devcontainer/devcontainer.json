@@ -41,6 +41,8 @@
           "node_modules/": true
         },
         "editor.minimap.enabled": false,
+        "window.sidebar.visible": false,
+        "window.panel.visible": false,
         "actionButtons": {
           "loadNpmCommands": false,
           "commands": [
