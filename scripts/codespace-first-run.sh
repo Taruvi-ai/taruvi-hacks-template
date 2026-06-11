@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# Codespace setup orchestrator.
-# Called by postCreateCommand (--non-interactive) and postAttachCommand.
-# In non-interactive mode: runs setup only if credentials are auto-fetchable,
-# exits cleanly otherwise (no waiting). Interactive mode waits for user input.
+# Codespace setup orchestrator — called by postAttachCommand.
+# Fetches Taruvi credentials and configures Codex.
+# npm install and codex install are done in onCreateCommand before the
+# codespace becomes Available, so no waiting is needed here.
 
 set -uo pipefail
 
@@ -11,24 +11,12 @@ NON_INTERACTIVE=false
 for _arg in "$@"; do [ "$_arg" = "--non-interactive" ] && NON_INTERACTIVE=true; done
 
 MARKER=".codespace/.setup-complete"
-CREATE_MARKER=".codespace/.create-complete"
 ENV_FILE=".env"
 
 # ── Prerequisites ──────────────────────────────────────────────────────────────
 [ -f .mcp.json ]   || cp .mcp.example.json .mcp.json
 [ -f "$ENV_FILE" ] || cp .env.example "$ENV_FILE"
 mkdir -p .codex/projects .codespace
-
-# ── Wait for postCreateCommand to finish ──────────────────────────────────────
-# GitHub marks the codespace Available before postCreateCommand completes, so
-# postAttachCommand can fire while npm install is still running. Wait here.
-if [ ! -f "$CREATE_MARKER" ]; then
-  echo "  ⏳  Waiting for container initialisation to complete..."
-  until [ -f "$CREATE_MARKER" ]; do
-    sleep 3
-  done
-  echo "  ✅  Container ready."
-fi
 
 # ── Path B: pre-injected Codespace environment variables ──────────────────────
 # When github-inject-secrets runs successfully the Build-a-thon platform injects
