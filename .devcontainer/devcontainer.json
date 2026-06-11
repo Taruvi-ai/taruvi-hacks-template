@@ -16,7 +16,7 @@
   },
   "postAttachCommand": {
     "setup":  "bash -lc 'bash scripts/codespace-first-run.sh'",
-    "layout": "bash -lc 'sleep 5 && code --command workbench.action.closePanel && code --command workbench.action.closeAllEditors && code --command workbench.action.closeSidebar && code --command workbench.view.extension.codexSecondaryViewContainer'"
+    "layout": "bash -lc 'sleep 5; _code=$(ls ~/.vscode-server/bin/*/bin/remote-cli/code 2>/dev/null | head -1); [ -z \"$_code\" ] && exit 0; \"$_code\" --command workbench.action.closePanel; \"$_code\" --command workbench.action.closeAllEditors; \"$_code\" --command workbench.action.closeSidebar; \"$_code\" --command workbench.view.extension.codexSecondaryViewContainer'"
   },
   "forwardPorts": [5173],
   "portsAttributes": {
