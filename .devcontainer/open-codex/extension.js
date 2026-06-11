@@ -23,8 +23,12 @@ exports.activate = function (context) {
     ? `https://${codespaceName}-5173.${domain}`
     : 'http://localhost:5173';
 
+  // Wait for Vite to be ready before opening Simple Browser — it takes a few
+  // seconds to compile after postStartCommand launches it.
   function openPreview() {
-    vscode.commands.executeCommand('simpleBrowser.show', previewUrl);
+    setTimeout(() => {
+      vscode.commands.executeCommand('simpleBrowser.show', previewUrl);
+    }, 5000);
   }
 
   // Setup already done and auth is in place — open Codex and the preview.
