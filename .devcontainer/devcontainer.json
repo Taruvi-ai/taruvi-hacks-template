@@ -41,6 +41,8 @@
           "node_modules/": true
         },
         "workbench.startupEditor": "none",
+        "workbench.activityBar.location": "hidden",
+        "terminal.integrated.closeOnExit": "always",
         "chatgpt.openOnStartup": true,
         "editor.minimap.enabled": false,
         "actionButtons": {
