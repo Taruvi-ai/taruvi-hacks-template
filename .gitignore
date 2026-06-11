@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.*.local
+.mcp.json
 *.pem
 *.key
 *.crt
@@ -19,11 +20,6 @@ node_modules/
 dist/
 build/
 coverage/
-
-# Local app source and generated outputs (excluded from reusable template repo)
-src/
-functions/
-packages/
 
 # Editor/system
 .DS_Store

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1E88E5" />
+    <meta
+      name="description"
+      content="Taruvi | Build your React-based CRUD applications, without constraints."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    <title>
+      Taruvi - Build your React-based CRUD applications, without constraints.
+    </title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <div id="console-log-drawer-root"></div>
+    <script>
+      (function () {
+        function showFatalOverlay(message) {
+          var existing = document.getElementById('__taruvi_fatal__');
+          if (existing) { existing.querySelector('pre').textContent += '\n' + message; return; }
+          var el = document.createElement('div');
+          el.id = '__taruvi_fatal__';
+          el.style.cssText = [
+            'position:fixed', 'inset:0', 'background:#1a1a1a', 'color:#ff6b6b',
+            'font-family:monospace', 'font-size:13px', 'padding:24px',
+            'z-index:999999', 'overflow:auto', 'display:flex',
+            'flex-direction:column', 'gap:12px'
+          ].join(';');
+          var heading = document.createElement('strong');
+          heading.textContent = 'Fatal Error';
+          heading.style.fontSize = '16px';
+          var pre = document.createElement('pre');
+          pre.style.cssText = 'margin:0;white-space:pre-wrap;word-break:break-word;flex:1';
+          pre.textContent = message;
+          var btn = document.createElement('button');
+          btn.textContent = 'Dismiss';
+          btn.style.cssText = 'background:#ff6b6b;color:#000;border:none;padding:8px 16px;cursor:pointer;border-radius:4px;width:fit-content';
+          btn.onclick = function () { el.remove(); };
+          el.appendChild(heading);
+          el.appendChild(pre);
+          el.appendChild(btn);
+          document.body.appendChild(el);
+        }
+        window.addEventListener('error', function (e) {
+          showFatalOverlay((e.error ? (e.error.stack || e.error.message) : null) || e.message || String(e));
+        });
+        window.addEventListener('unhandledrejection', function (e) {
+          var r = e.reason;
+          showFatalOverlay(r ? (r.stack || r.message || String(r)) : 'Unhandled promise rejection');
+        });
+      })();
+    </script>
+    <script type="module" src="/src/index.tsx"></script>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm dev` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>

@@ -42,7 +42,7 @@ matcher = ".*"
 
 [[hooks.PreToolUse.hooks]]
 type = "command"
-command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/langfuse_codex_hook.py"'
+command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/langfuse_session_tracer.py"'
 timeout = 10
 statusMessage = "Logging PreToolUse to Langfuse"
 
@@ -51,7 +51,7 @@ matcher = ".*"
 
 [[hooks.PostToolUse.hooks]]
 type = "command"
-command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/langfuse_codex_hook.py"'
+command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/langfuse_session_tracer.py"'
 timeout = 10
 statusMessage = "Logging PostToolUse to Langfuse"
 
@@ -59,7 +59,7 @@ statusMessage = "Logging PostToolUse to Langfuse"
 
 [[hooks.Stop.hooks]]
 type = "command"
-command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/langfuse_codex_hook.py"'
+command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/langfuse_session_tracer.py"'
 timeout = 30
 statusMessage = "Running Langfuse stop hook"
 
@@ -68,6 +68,6 @@ statusMessage = "Running Langfuse stop hook"
 
 [[hooks.SessionStart.hooks]]
 type = "command"
-command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/sync_codex_prompts_to_langfuse.py"'
+command = 'python3 "$(git rev-parse --show-toplevel)/.codex/hooks/langfuse_prompt_sync.py"'
 timeout = 20
 statusMessage = "Syncing Codex prompts to Langfuse"
