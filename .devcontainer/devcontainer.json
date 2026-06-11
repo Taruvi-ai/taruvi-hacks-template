@@ -15,7 +15,8 @@
     "auth": "bash -lc 'bash scripts/write-codex-auth.sh 2>&1 | tee /tmp/codex-auth.log'"
   },
   "postAttachCommand": {
-    "setup": "bash -lc 'bash scripts/codespace-first-run.sh'"
+    "setup":  "bash -lc 'bash scripts/codespace-first-run.sh'",
+    "layout": "bash -lc 'sleep 5 && code --command workbench.action.closePanel && code --command workbench.action.closeAllEditors && code --command workbench.view.extension.chatgpt'"
   },
   "forwardPorts": [5173],
   "portsAttributes": {
@@ -40,6 +41,7 @@
         "files.exclude": {
           "node_modules/": true
         },
+        "workbench.startupEditor": "none",
         "editor.minimap.enabled": false,
         "actionButtons": {
           "loadNpmCommands": false,
