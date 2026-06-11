@@ -126,5 +126,10 @@ else
     touch "$MARKER"
     echo "  ✅  Setup complete."
     echo ""
+    # Reload VS Code so Codex picks up the newly-written auth.json.
+    # auth.json is checked by the extension only at load time, so a reload
+    # is needed to connect automatically without the user having to do it manually.
+    sleep 2
+    code --command workbench.action.reloadWindow 2>/dev/null || true
   fi
 fi
