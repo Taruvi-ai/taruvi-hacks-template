@@ -15,7 +15,7 @@
     "auth": "bash -lc 'bash scripts/write-codex-auth.sh 2>&1 | tee /tmp/codex-auth.log'"
   },
   "postAttachCommand": {
-    "setup": "bash -lc 'bash scripts/codespace-first-run.sh'"
+    "setup": "bash -lc 'nohup bash scripts/codespace-first-run.sh >> /tmp/setup.log 2>&1 & disown'"
   },
   "forwardPorts": [5173],
   "portsAttributes": {
