@@ -15,8 +15,7 @@
     "auth": "bash -lc 'nohup bash scripts/write-codex-auth.sh >> /tmp/codex-auth.log 2>&1 & disown'"
   },
   "postAttachCommand": {
-    "setup": "bash -lc 'bash scripts/codespace-first-run.sh'",
-    "layout": "bash -lc 'sleep 4 && code --command workbench.action.closePanel && code --command workbench.action.closeSidebar && code --command workbench.view.extension.openai-chatgpt-view-container'"
+    "setup": "bash -lc 'bash scripts/codespace-first-run.sh'"
   },
   "forwardPorts": [5173],
   "portsAttributes": {

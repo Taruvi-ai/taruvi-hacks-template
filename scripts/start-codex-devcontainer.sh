@@ -156,6 +156,15 @@ else
   else
     echo "export ${PROVIDER_VAR}=${PROVIDER_KEY}" >> ~/.bashrc
   fi
+  # Authenticate the Codex CLI — official path that the openai.chatgpt extension
+  # also reads. This runs in addition to the manual auth.json writes above.
+  if [ "$PROVIDER_VAR" = "OPENAI_API_KEY" ]; then
+    if command -v codex >/dev/null 2>&1; then
+      printf '%s\n' "$PROVIDER_KEY" | codex login --with-api-key 2>/dev/null \
+        && echo "  ✅  Codex CLI authenticated." \
+        || echo "  ⚠️   Codex CLI login skipped — will use OPENAI_API_KEY env var."
+    fi
+  fi
 fi
 
 echo "  ✅  AI provider key configured."

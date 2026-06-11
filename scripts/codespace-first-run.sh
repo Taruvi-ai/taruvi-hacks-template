@@ -126,9 +126,5 @@ else
     touch "$MARKER"
     echo "  ✅  Setup complete."
     echo ""
-    # Reload VS Code extensions so Codex picks up the newly written auth.json
-    # without requiring a manual browser refresh. This reloads extensions only
-    # (not the full window), so onAutoForward: openPreview does not re-fire.
-    code --command workbench.action.reloadExtensions 2>/dev/null || true
   fi
 fi
