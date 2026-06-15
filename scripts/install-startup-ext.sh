@@ -25,12 +25,21 @@ EOF
 cat > "$EXT_DIR/extension.js" << 'EOF'
 "use strict";
 const vscode = require("vscode");
-function activate() {
+async function activate() {
+  // Close sidebar + panel and open Codex as editor panel
   setTimeout(() => {
     vscode.commands.executeCommand("workbench.action.closeSidebar");
     vscode.commands.executeCommand("workbench.action.closePanel");
     vscode.commands.executeCommand("chatgpt.newCodexPanel");
   }, 2000);
+  // Open preview in Simple Browser tab once Vite is ready
+  setTimeout(async () => {
+    try {
+      const local = vscode.Uri.parse("http://localhost:5173");
+      const external = await vscode.env.asExternalUri(local);
+      vscode.commands.executeCommand("simpleBrowser.show", external.toString());
+    } catch (_) {}
+  }, 6000);
 }
 function deactivate() {}
 module.exports = { activate, deactivate };
