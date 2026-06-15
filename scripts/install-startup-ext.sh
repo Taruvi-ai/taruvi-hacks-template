@@ -26,7 +26,11 @@ cat > "$EXT_DIR/extension.js" << 'EOF'
 "use strict";
 const vscode = require("vscode");
 function activate() {
-  setTimeout(() => vscode.commands.executeCommand("chatgpt.newCodexPanel"), 2000);
+  setTimeout(() => {
+    vscode.commands.executeCommand("workbench.action.closeSidebar");
+    vscode.commands.executeCommand("workbench.action.closePanel");
+    vscode.commands.executeCommand("chatgpt.newCodexPanel");
+  }, 2000);
 }
 function deactivate() {}
 module.exports = { activate, deactivate };
