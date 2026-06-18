@@ -20,9 +20,13 @@
   },
   "forwardPorts": [5173],
   "portsAttributes": {
+    "5001": {
+      "label": "Refine Devtools",
+      "onAutoForward": "silent"
+    },
     "5173": {
       "label": "Taruvi Buildathon App",
-      "onAutoForward": "silent"
+      "onAutoForward": "openBrowser"
     }
   },
   "customizations": {
