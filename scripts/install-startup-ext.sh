@@ -32,12 +32,12 @@ async function activate() {
     vscode.commands.executeCommand("workbench.action.closePanel");
     vscode.commands.executeCommand("chatgpt.newCodexPanel");
   }, 2000);
-  // Open preview in Simple Browser tab once Vite is ready
+  // Open preview in a new browser tab once Vite is ready
   setTimeout(async () => {
     try {
       const local = vscode.Uri.parse("http://localhost:5173");
       const external = await vscode.env.asExternalUri(local);
-      vscode.commands.executeCommand("simpleBrowser.show", external.toString());
+      vscode.env.openExternal(external);
     } catch (_) {}
   }, 6000);
 }
