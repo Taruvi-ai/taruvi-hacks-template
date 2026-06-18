@@ -11,7 +11,7 @@
   },
   "onCreateCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects .codespace; npm install --legacy-peer-deps; command -v codex >/dev/null 2>&1 || npm install -g @openai/codex'",
   "postStartCommand": {
-    "app":  "bash -lc 'mkdir -p .codex/projects .codespace; nohup npm run dev -- --host 0.0.0.0 --port 5173 >> /tmp/vite.log 2>&1 & disown'",
+    "app":  "bash -lc 'mkdir -p .codex/projects .codespace; npm run dev -- --host 0.0.0.0 --port 5173'",
     "auth": "bash -lc 'bash scripts/write-codex-auth.sh 2>&1 | tee /tmp/codex-auth.log'"
   },
   "postAttachCommand": {
