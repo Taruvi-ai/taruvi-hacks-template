@@ -15,14 +15,14 @@
     "auth": "bash -lc 'bash scripts/write-codex-auth.sh 2>&1 | tee /tmp/codex-auth.log'"
   },
   "postAttachCommand": {
-    "vite":  "bash -lc 'npm run dev -- --host 0.0.0.0 --port 5173'",
+    "vite":  "bash -lc 'pgrep -f vite > /dev/null 2>&1 || { nohup npm run dev -- --host 0.0.0.0 --port 5173 >> /tmp/vite.log 2>&1 & sleep 8; }'",
     "setup": "bash -lc 'nohup bash scripts/codespace-first-run.sh >> /tmp/setup.log 2>&1 & disown & bash scripts/install-startup-ext.sh 2>&1 | tee /tmp/startup-ext.log'"
   },
   "forwardPorts": [5173],
   "portsAttributes": {
     "5173": {
       "label": "Taruvi Buildathon App",
-      "onAutoForward": "silent"
+      "onAutoForward": "openPreview"
     }
   },
   "customizations": {
