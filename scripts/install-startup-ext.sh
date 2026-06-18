@@ -37,7 +37,7 @@ async function activate() {
     try {
       const local = vscode.Uri.parse("http://localhost:5173");
       const external = await vscode.env.asExternalUri(local);
-      vscode.commands.executeCommand("simpleBrowser.show", external.toString());
+      vscode.env.openExternal(external);
     } catch (_) {}
   }, 6000);
 }
