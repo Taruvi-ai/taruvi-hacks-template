@@ -522,6 +522,10 @@ import EditIcon from '@mui/icons-material/Edit';
 
 NavKit (top nav, from `@taruvi/navkit`) ships three color variants — Blue `#2b97ff` (default), White (`#fff` + `#e5e7eb` border), Dark `#004369` (accent `#9de5fd`). Pick the variant in NavKit's `getTheme` callback in [`src/App.tsx`](src/App.tsx), not the MUI theme.
 
+### Profile menu custom items
+
+Add app-specific actions to the avatar dropdown (between dark mode and Logout) in [`src/navkit/useNavkitProfileMenuItems.tsx`](src/navkit/useNavkitProfileMenuItems.tsx). Each item needs a unique `title`, an `icon` (`ReactNode`), and a `callBackFunc`. Use Font Awesome icons to match Navkit's built-in menu rows, or MUI `*Rounded` icons for consistency with the rest of the app. See [Custom profile menu items](docs/GETTING_STARTED.md#custom-profile-menu-items) in the getting-started guide.
+
 Sidebar widths are constants in [`src/components/sidenav/MuiSidenav.tsx`](src/components/sidenav/MuiSidenav.tsx): collapsed 72px, expanded 240px. Active items pick up `#1976d2` via the theme.
 
 ---

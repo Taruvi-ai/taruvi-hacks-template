@@ -30,11 +30,13 @@ import {AppSettingsProvider, useAppSettings} from "./contexts/app-settings";
 import { useContext, useRef, useEffect } from "react";
 import { Home } from "./pages/home";
 import { Login } from "./pages/login";
+import { useNavkitProfileMenuItems } from "./navkit/useNavkitProfileMenuItems";
 
 const AppContent = () => {
   const { setMode } = useContext(ColorModeContext);
   const navRef = useRef<HTMLDivElement>(null);
-  const { settings } = useAppSettings()
+  const { settings } = useAppSettings();
+  const profileMenuItems = useNavkitProfileMenuItems();
 
   useEffect(() => {
     if (navRef.current) {
@@ -58,6 +60,7 @@ const AppContent = () => {
         <Navkit
           client={taruviClient}
           getTheme={(theme) => setMode(theme)}
+          profileMenuItems={profileMenuItems}
         />
       </div>
       <RefineSnackbarProvider>

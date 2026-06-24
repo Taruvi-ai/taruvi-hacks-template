@@ -95,6 +95,61 @@ docker run --rm -it -v .:/app repo.eoxvantage.com/hackathon/environment codex
 
 ---
 
+## Custom profile menu items
+
+Navkit's profile dropdown (avatar menu) supports app-specific actions — for example "Report an issue", "Feedback", or a link to help docs. Built-in items (user name, dark mode when enabled, logout) are handled by Navkit; your app adds extras via a hook.
+
+### Where to customize
+
+Edit [`src/navkit/useNavkitProfileMenuItems.tsx`](../src/navkit/useNavkitProfileMenuItems.tsx). The template ships with an empty list and a commented example. [`src/App.tsx`](../src/App.tsx) already passes the result to Navkit:
+
+```tsx
+const profileMenuItems = useNavkitProfileMenuItems();
+
+<Navkit
+  client={taruviClient}
+  getTheme={(theme) => setMode(theme)}
+  profileMenuItems={profileMenuItems}
+/>
+```
+
+### Item shape
+
+Each entry is a `ProfileMenuItem` from `@taruvi/navkit`:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | `string` | Label shown in the menu (also used as the React `key` — keep titles unique) |
+| `icon` | `ReactNode` | Icon beside the label (Font Awesome or MUI icons both work) |
+| `callBackFunc` | `() => void` | Runs when the user clicks the item |
+
+### Example
+
+```tsx
+import { useMemo } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import type { ProfileMenuItem } from "@taruvi/navkit";
+
+export function useNavkitProfileMenuItems(): ProfileMenuItem[] {
+  return useMemo(
+    () => [
+      {
+        title: "Report an issue",
+        icon: <FontAwesomeIcon icon={["fas", "comments"]} />,
+        callBackFunc: () => {
+          window.open("https://support.example.com", "_blank", "noopener,noreferrer");
+        },
+      },
+    ],
+    [],
+  );
+}
+```
+
+Font Awesome packages are already in `package.json` (Navkit peer dependencies). For in-app navigation, use React Router inside `callBackFunc` or open an internal path with `window.location.href`.
+
+---
+
 ## Environment Configuration
 
 Copy `.env.example` to `.env` and fill in your values:
