@@ -272,7 +272,9 @@ export const taruviClient = new Client({
 
 ## Quick Reference
 
-**File Paths:** App: `/src/App.tsx` | Providers: `/src/providers/refineProviders.ts` | Client: `/src/taruviClient.ts` | Pages: `/src/pages/{resource}/` | Components: `/src/components/` | Env: `/.env.local`
+**File Paths:** App: `/src/App.tsx` | Providers: `/src/providers/refineProviders.ts` | Client: `/src/taruviClient.ts` | Navkit profile menu: `/src/navkit/useNavkitProfileMenuItems.tsx` | Pages: `/src/pages/{resource}/` | Components: `/src/components/` | Env: `/.env.local`
+
+**Navkit profile menu:** Custom avatar-dropdown items live in `useNavkitProfileMenuItems` and are passed to `<Navkit profileMenuItems={...} />` in `App.tsx`. See [docs/GETTING_STARTED.md — Custom profile menu items](docs/GETTING_STARTED.md#custom-profile-menu-items).
 
 **Key Commands:**
 ```bash

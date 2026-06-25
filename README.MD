@@ -4,6 +4,7 @@ This repository is the official starter template for Taruvi hackathons.
 
 It includes:
 - A Refine v5 + React app scaffold
+- Navkit top navigation with a customizable profile menu hook (`src/navkit/useNavkitProfileMenuItems.tsx`)
 - GitHub Codespaces-ready devcontainer setup
 - Guided Codex startup flow for required Taruvi environment variables
 - MCP configuration for Taruvi + helpful developer tools
@@ -66,6 +67,10 @@ npm run start
 - React + TypeScript
 - MUI
 - Taruvi Providers + Taruvi MCP integration
+
+## Customizing Navkit
+
+Add items to the profile avatar dropdown (e.g. "Report an issue", help links) by editing `src/navkit/useNavkitProfileMenuItems.tsx`. Full instructions: [docs/GETTING_STARTED.md — Custom profile menu items](docs/GETTING_STARTED.md#custom-profile-menu-items).
 
 ## Learn More
 
