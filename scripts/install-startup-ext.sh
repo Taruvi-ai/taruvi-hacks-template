@@ -28,7 +28,7 @@ const vscode = require("vscode");
 async function activate() {
   // Hide the sidebar for a clean, focused layout
   vscode.commands.executeCommand("workbench.action.closeSidebar");
-
+  vscode.commands.executeCommand("workbench.action.closePanel");
   // Open Codex directly as an editor tab (not the bottom panel)
   const terminal = vscode.window.createTerminal({
     name: "Codex",
