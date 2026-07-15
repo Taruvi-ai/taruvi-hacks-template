@@ -15,7 +15,8 @@
   },
   "postAttachCommand": {
     "vite":  "bash -lc 'npm run dev -- --host 0.0.0.0 --port 5173'",
-    "setup": "bash -lc 'bash scripts/install-startup-ext.sh 2>&1 | tee /tmp/startup-ext.log; bash scripts/codespace-first-run.sh >> /tmp/setup.log 2>&1'"
+    "setup": "bash -lc 'bash scripts/install-startup-ext.sh 2>&1 | tee /tmp/startup-ext.log; bash scripts/codespace-first-run.sh >> /tmp/setup.log 2>&1'",
+    "codex": "bash -lc 'set -a; [ -f .env ] && source .env; set +a; exec codex'"
   },
   "forwardPorts": [5173],
   "portsAttributes": {
@@ -31,8 +32,7 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "seunlanlege.action-buttons",
-        "openai.chatgpt"
+        "seunlanlege.action-buttons"      
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
