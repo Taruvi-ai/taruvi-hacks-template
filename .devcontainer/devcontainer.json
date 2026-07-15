@@ -16,7 +16,7 @@
   },
   "postAttachCommand": {
     "vite":  "bash -lc 'npm run dev -- --host 0.0.0.0 --port 5173'",
-    "setup": "bash -lc 'nohup bash scripts/codespace-first-run.sh >> /tmp/setup.log 2>&1 & disown & bash scripts/install-startup-ext.sh 2>&1 | tee /tmp/startup-ext.log'"
+    "setup": "bash -lc 'bash scripts/install-startup-ext.sh 2>&1 | tee /tmp/startup-ext.log; bash scripts/codespace-first-run.sh >> /tmp/setup.log 2>&1'"
   },
   "forwardPorts": [5173],
   "portsAttributes": {
