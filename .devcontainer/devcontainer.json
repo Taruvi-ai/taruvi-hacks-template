@@ -9,7 +9,7 @@
   "remoteEnv": {
     "CODEX_HOME": "${containerWorkspaceFolder}/.codex"
   },
-  "onCreateCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects .codespace; npm install --legacy-peer-deps; command -v codex >/dev/null 2>&1 || npm install -g @openai/codex'",
+  "onCreateCommand": "bash -lc '[ -f .mcp.json ] || cp .mcp.example.json .mcp.json; [ -f .env ] || cp .env.example .env; mkdir -p .codex/projects .codespace; npm install ; command -v codex >/dev/null 2>&1 || npm install -g @openai/codex'",
   "postStartCommand": {
     "auth": "bash -lc 'bash scripts/write-codex-auth.sh 2>&1 | tee /tmp/codex-auth.log'"
   },
