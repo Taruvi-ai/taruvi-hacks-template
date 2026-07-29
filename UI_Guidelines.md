@@ -135,7 +135,7 @@ The theme styles components but doesn't dictate page composition. Use these patt
 
 ### 4.1 Page container
 
-**Always wrap page content in the shared `PageContainer`** — do not hand-roll `<Container>` per page. This centralizes page padding so every generated app is consistent (compact `maxWidth="lg"`, 24px padding).
+**Always wrap page content in the shared `PageContainer`** — do not hand-roll `<Container>` per page. This centralizes page padding so every generated app is consistent (full-width, compact 24px padding — content fills the space instead of being capped and centered).
 
 ```tsx
 import { PageContainer } from "../../components";
@@ -145,7 +145,7 @@ import { PageContainer } from "../../components";
 </PageContainer>
 ```
 
-Override only when a page genuinely needs it — e.g. `<PageContainer maxWidth={false} sx={{ p: 0 }}>` for a full-bleed cover page. Padding lives in [`PageContainer.tsx`](src/components/PageContainer.tsx); change it there, not per page.
+Override only when a page genuinely needs it — e.g. `<PageContainer maxWidth="lg">` for a centered, width-limited column, or `<PageContainer sx={{ p: 0 }}>` for a full-bleed cover page. Padding lives in [`PageContainer.tsx`](src/components/PageContainer.tsx); change it there, not per page.
 
 ### 4.3 Form layout
 
