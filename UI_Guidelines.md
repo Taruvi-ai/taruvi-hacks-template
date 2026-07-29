@@ -498,9 +498,28 @@ Same data as a row, different framing. Use cards when records are mobile-first, 
 | Sort/filter is primary | Drag-and-drop, kanban, visual grouping |
 | Data is short scalars | Records have rich content (image, multiple chips, long text) |
 
+### 4.14 Stat / KPI card (dashboard tile)
+
+A stat tile is a plain themed `<Card>`: number is the hero, label above it, left-aligned. **No colored side/accent border** (the 4px left border is `<Alert>`-only) and **no decorative icon puck**. Signal severity by coloring the number (`error.main` / `success.main`), not the box.
+
+```tsx
+<Card>
+  <Typography variant="body2" color="text.secondary">Open RCAs</Typography>
+  <Typography variant="h3" sx={{ fontFamily: 'Quicksand', fontWeight: 700 }}>{openRcas}</Typography>
+</Card>
+```
+
+If the tile navigates, wrap it in `<CardActionArea>` — the only icon is a trailing chevron, never a standalone badge.
+
 ---
 
 ## 5. Icons
+
+### Icons are affordances, not decoration
+
+Add an icon only when it's tied to an action or control — a button, link, menu, sort toggle, search/clear adornment. Decorative glyphs on stat tiles, section headers, and card corners are what make a page read as machine-generated; when in doubt, leave it out. The one exception is the large empty-state illustration (§4.6).
+
+### Rounded variants
 
 The design system uses **Material Icons Rounded**. With `@mui/icons-material`, that means the **`*Rounded`** variant import:
 
