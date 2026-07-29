@@ -229,6 +229,7 @@ export const taruviTokens = {
     chip: '4px 12px',
     chipSm: '2px 9px',
     tableCell: '12px 16px',
+    tableCellX: '16px', // horizontal-only variant for DataGrid cells (see MuiDataGrid.cell)
     statusMsg: '14px 18px',
     sidebarItem: '10px 12px',
   },
@@ -818,8 +819,18 @@ const componentOverrides = (mode: 'light' | 'dark'): ThemeOptions['components'] 
           color: isLight ? taruviTokens.text.muted : taruviTokens.neutral[400],
         },
         cell: {
-          padding: taruviTokens.spacing.tableCell,                       // 12 16
+          // DataGrid cells are fixed-height and vertically center content via a
+          // line-height trick (line-height ≈ row height), NOT flexbox. Applying
+          // vertical padding here shrinks the content box while the tall line box
+          // stays put, pushing text/chips off-center. So pad horizontally only and
+          // let MUI's native centering handle the vertical axis (text via line-height,
+          // chips via their own vertical-align: middle). Row height is set by the
+          // `rowHeight` prop, so this does not shorten rows.
+          padding: `0 ${taruviTokens.spacing.tableCellX}`,               // 0 16
           borderBottom: `1px solid ${isLight ? taruviTokens.surface.borderTableRow : 'rgba(255,255,255,0.06)'}`,
+          // Belt-and-suspenders: if a colDef opts into flex cells (display: 'flex'),
+          // keep them centered too.
+          '&.MuiDataGrid-cell--flex': { alignItems: 'center' },
         },
         row: {
           '&:hover': {
