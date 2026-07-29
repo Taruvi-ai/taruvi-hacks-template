@@ -135,11 +135,17 @@ The theme styles components but doesn't dictate page composition. Use these patt
 
 ### 4.1 Page container
 
+**Always wrap page content in the shared `PageContainer`** — do not hand-roll `<Container>` per page. This centralizes page padding so every generated app is consistent (compact `maxWidth="lg"`, 24px padding).
+
 ```tsx
-<Container maxWidth="lg" sx={{ py: 6, px: 4 }}>  {/* 48px y, 32px x — matches design `.container` */}
+import { PageContainer } from "../../components";
+
+<PageContainer>
   …
-</Container>
+</PageContainer>
 ```
+
+Override only when a page genuinely needs it — e.g. `<PageContainer maxWidth={false} sx={{ p: 0 }}>` for a full-bleed cover page. Padding lives in [`PageContainer.tsx`](src/components/PageContainer.tsx); change it there, not per page.
 
 ### 4.3 Form layout
 
