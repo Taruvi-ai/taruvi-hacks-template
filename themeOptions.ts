@@ -579,7 +579,10 @@ const componentOverrides = (mode: 'light' | 'dark'): ThemeOptions['components'] 
       styleOverrides: {
         root: {
           borderRadius: taruviTokens.radius.xxl,        // 16px
-          padding: taruviTokens.spacing.cardPadding,    // 28px
+          // The 28px inset lives on MuiCardContent (below), not here, so a
+          // full-bleed child — a DataGrid, a CardMedia image — can sit flush by
+          // zeroing CardContent's padding. Putting padding on the Card root
+          // insets *every* child, which left a gap around edge-to-edge tables.
           boxShadow: isLight ? taruviTokens.shadow.card : taruviTokens.shadow.cardDark,
           backgroundImage: 'none',
           backgroundColor: isLight ? taruviTokens.surface.paper : '#11202a',
@@ -601,7 +604,12 @@ const componentOverrides = (mode: 'light' | 'dark'): ThemeOptions['components'] 
     },
     MuiCardContent: {
       styleOverrides: {
-        root: { padding: 0, '&:last-child': { paddingBottom: 0 } },
+        // Card inset now lives here (moved off MuiCard.root) so a full-bleed
+        // table can opt out with `sx={{ p: 0, '&:last-child': { pb: 0 } }}`.
+        root: {
+          padding: taruviTokens.spacing.cardPadding,    // 28px
+          '&:last-child': { paddingBottom: taruviTokens.spacing.cardPadding },
+        },
       },
     },
 
