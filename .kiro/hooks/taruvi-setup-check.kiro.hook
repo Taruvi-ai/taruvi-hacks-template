@@ -1,0 +1,13 @@
+{
+  "name": "Check Taruvi Setup",
+  "version": "1.0.0",
+  "description": "Verify both Taruvi config outputs — the MCP config (agent → platform) and the app .env (app → platform) — exist, are complete, and agree on tenant and app slug.",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "python3 scripts/check-taruvi-setup.py",
+    "timeout": 30
+  }
+}
