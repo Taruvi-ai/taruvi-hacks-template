@@ -1,0 +1,13 @@
+{
+  "name": "Refine v5 Syntax Review",
+  "version": "1.0.0",
+  "description": "When a React/TypeScript file is saved, check it for Refine v4 hook syntax that silently breaks on v5.",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["**/*.tsx", "**/*.ts"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the saved file for Refine v4 patterns that break on v5: destructuring `data` from useList/useOne/useMany/useShow instead of `result`, reading `.data.data`, using `isLoading` on a mutation instead of `mutation.isPending`, `tableQueryResult` from useDataGrid, or the renamed params `metaData`, `sorter`, `hasPagination`, `initialCurrent`, `initialPageSize`. Also flag unstable hook arguments (inline `new Date()`, fresh object/array literals in filters/sorters/meta) that cause refetch loops. If the file is clean, say nothing. If you find issues, list the exact line and the v5 replacement."
+  }
+}
