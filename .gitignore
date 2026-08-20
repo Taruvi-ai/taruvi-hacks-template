@@ -26,7 +26,6 @@ _.njsproj
 _.sln
 \*.sw?
 .mcp.json
-.claude/
 .env
 .env.local
 
