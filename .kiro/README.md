@@ -32,7 +32,8 @@ cp    kiro/mcp.json    /path/to/project/.kiro/settings/mcp.json
 ## Configure MCP (interactive)
 
 1. Ask "setup taruvi" to load the **kiro-setup** skill.
-2. Answer tenant → API key → app slug → optional Context7 **one at a time**.
+2. It asks once: generate an API key on the app's **Connect** page, then paste the whole
+   `TARUVI_SITE_URL` / `TARUVI_APP_SLUG` / `TARUVI_API_KEY` block back (plus optional Context7).
 3. The skill writes values into `.kiro/settings/mcp.json` (workspace) or
    `~/.kiro/settings/mcp.json` (user). Kiro merges these with precedence
    `user < workspace`.

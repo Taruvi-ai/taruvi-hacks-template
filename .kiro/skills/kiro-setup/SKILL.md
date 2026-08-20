@@ -9,8 +9,8 @@ description: >
 
 # Kiro setup (Taruvi)
 
-You are running the interactive Taruvi setup for Kiro. **You ask the questions** — the user
-should not have to hunt through config files.
+You are running the interactive Taruvi setup for Kiro. **You ask** — the user should not have to
+hunt through config files. One ask, one paste, then you do the rest.
 
 Setup has **two outputs**. Both are required; finishing only the first is the most common mistake:
 
@@ -19,53 +19,76 @@ Setup has **two outputs**. Both are required; finishing only the first is the mo
 
 ## Hard rules
 
-1. Ask **exactly one question per message**. Wait for the answer before continuing.
+1. Collect **all three Taruvi values in one message**. Don't drip-feed one question per turn.
 2. Never invent tenant names, API keys, or app slugs.
 3. Never echo a full API key back in the transcript. Mask as `…abcd`.
 4. Never write real secrets into git-tracked files. Confirm the target is gitignored first.
 5. Do not overwrite an existing config — merge into it and confirm before replacing values.
 
-## Where the user gets these values
+## Step 1 — Ask for the connection details (single message)
 
-Before Q1, tell them **tenant / API key / app slug** are on the app **Connect** page in
-Taruvi Console:
+Send one message with the whole ask. All three values sit in one copyable block on the app's
+**Connect** page, so there's nothing to gain from asking separately.
+
+Build the URL from the user's own org / site / app:
 
 `https://<console-host>/organizations/<org-slug>/sites/<site-slug>/apps/<app-slug>/settings?section=connect`
 
-Example:
+If you don't know those slugs yet, give the pattern and tell them: Console → org → site → app →
+**Settings → Connect**. Don't guess slugs to produce a clickable link.
 
-https://test-console.taruvi.cloud/organizations/eox-vantage/sites/test-prompts/apps/plugin-test/settings?section=connect
+Message to send:
 
-If they don't know that URL: Console → org → site → app → **Settings → Connect**.
+> Open your app's **Connect** page in Taruvi Console:
+>
+> `https://<console-host>/organizations/<org-slug>/sites/<site-slug>/apps/<app-slug>/settings?section=connect`
+>
+> On that page:
+>
+> 1. Click **Generate API Key** — the banner reads "Generate an API key to unlock MCP Server,
+>    REST API, and SDK connections." Without this the key shows as `<your-api-key>` and nothing
+>    will authenticate.
+> 2. Open the **Environment** tab and copy the whole block (the copy icon is top-right). It looks
+>    like:
+>
+>    ```bash
+>    TARUVI_SITE_URL=https://<tenant>.taruvi.cloud
+>    TARUVI_APP_SLUG=<app-slug>
+>    TARUVI_API_KEY=<generated-key>
+>    ```
+>
+> 3. Paste all three lines back here.
+>
+> Optional: if you want **Context7** for library docs, paste its API key too, or say `skip`.
+> (Context7 is unrelated to Taruvi Connect.)
 
-## Interview (one at a time)
+## Step 2 — Parse and confirm
 
-### Q1 — Tenant subdomain
+From the pasted block:
 
-> What's your Taruvi **tenant subdomain**? (e.g. `acme` for `https://acme.taruvi.cloud/mcp/` —
-> subdomain only, not the full URL.)
+| Parsed | Use |
+|---|---|
+| `TARUVI_SITE_URL` | `.env` as-is; strip `https://` and `.taruvi.cloud` for the MCP tenant |
+| `TARUVI_APP_SLUG` | `.env` + `X-App-Slug` |
+| `TARUVI_API_KEY` | `.env` + `Authorization: Api-Key …` |
 
-Validate: no `https://`, no spaces. If they paste a full URL, extract the subdomain and confirm.
+Deriving the tenant from `TARUVI_SITE_URL` is what keeps the two formats consistent — the app
+wants the full URL, MCP wants the bare subdomain.
 
-### Q2 — API key
+Reject and re-ask only when something is actually missing or unusable:
 
-> Paste your Taruvi **API key** from the Connect page (the Knox token used as
-> `Authorization: Api-Key …`).
+- `TARUVI_API_KEY=<your-api-key>` (literal placeholder) → they skipped **Generate API Key**
+- fewer than three values pasted → ask for the missing ones by name, in one message
+- a bare subdomain instead of a URL → accept it, expand to `https://<tenant>.taruvi.cloud`, confirm
 
-### Q3 — App slug
+Then echo a summary with the key masked before writing anything.
 
-> What's the **app slug** for `X-App-Slug`? (from Connect, e.g. `plugin-test`)
+If Context7 was skipped, **omit the `context7` server entirely** rather than writing an entry with
+an empty key.
 
-### Q4 — Context7 (optional)
+## Step 3, output 1 — MCP config
 
-> Want to configure a **Context7** API key for library docs? Paste it, or say `skip`.
-> (Not from Taruvi Connect.)
-
-If skipped, **omit the `context7` server entirely** rather than writing an entry with an empty key.
-
-## Output 1 — MCP config
-
-Summarize with secrets masked, then pick a storage path.
+Pick a storage path. Tenant here is the subdomain derived from `TARUVI_SITE_URL`.
 
 ### Path A (recommended) — environment variables
 
@@ -132,7 +155,7 @@ HTTP server shape:
 }
 ```
 
-## Output 2 — app `.env` (do not skip)
+## Step 3, output 2 — app `.env` (do not skip)
 
 MCP config only connects *you*. The **app** reads its own credentials from `.env`. Symptom of
 skipping this: the app throws "Missing required environment variable" from `src/taruviClient.ts`
@@ -143,11 +166,11 @@ cp .env.example .env
 chmod 600 .env
 ```
 
-Watch the naming — it differs from the MCP config:
+The Connect page block is already in `.env` format, so paste the three lines in verbatim:
 
 | `.env` key | Value | Note |
 |---|---|---|
-| `TARUVI_SITE_URL` | `https://<tenant>.taruvi.cloud` | **Full URL**, not the bare subdomain |
+| `TARUVI_SITE_URL` | `https://<tenant>.taruvi.cloud` | **Full URL** — the MCP config uses the bare subdomain of this |
 | `TARUVI_APP_SLUG` | app slug | same as `X-App-Slug` |
 | `TARUVI_API_KEY` | Knox key | same key as MCP |
 
@@ -162,7 +185,7 @@ If the repo ships an interactive `setup-env.js` (`npm run setup`), that script w
 `.mcp.json` together and is a fine alternative to editing by hand. Don't run both paths and end
 up with conflicting values.
 
-## Connect and verify
+## Step 4 — Connect and verify
 
 1. Reconnect from the **MCP Server** view in the Kiro feature panel. Kiro reconnects on config
    change; no restart needed. (A restart *is* needed if you just exported new shell variables.)

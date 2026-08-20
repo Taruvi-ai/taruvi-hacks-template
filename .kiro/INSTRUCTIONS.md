@@ -114,15 +114,21 @@ Say:
 
 > setup taruvi
 
-The `kiro-setup` skill asks four questions, one per message:
+The `kiro-setup` skill asks once, in a single message:
 
-1. Tenant subdomain (e.g. `acme`)
-2. Taruvi API key (Knox token)
-3. App slug
-4. Context7 key (optional — `skip` is fine)
+1. Go to the app's **Connect** page — Console → org → site → app → **Settings → Connect**
+2. Click **Generate API Key** (without it the key renders as `<your-api-key>`)
+3. Copy the **Environment** tab block and paste all three lines back:
 
-All three Taruvi values are on the app's **Connect** page in Taruvi Console:
-Console → org → site → app → **Settings → Connect**.
+   ```bash
+   TARUVI_SITE_URL=https://<tenant>.taruvi.cloud
+   TARUVI_APP_SLUG=<app-slug>
+   TARUVI_API_KEY=<generated-key>
+   ```
+
+4. Optionally a Context7 key (`skip` is fine)
+
+The skill derives the MCP tenant from `TARUVI_SITE_URL`, so you never type the subdomain separately.
 
 ### Setup produces two files, not one
 
@@ -175,7 +181,7 @@ Each row tests a distinct mechanism. Run them in order.
 | # | Action | Pass looks like |
 |---|---|---|
 | 1 | In a fresh session, before running setup, ask for a feature (e.g. "add a list page for one of my datatables") | The agent notices `.env` is missing and stops, instead of writing code against an unconfigured app |
-| 2 | "setup taruvi" | Four questions, one per message; keys echoed masked; **both** `mcp.json` and `.env` written |
+| 2 | "setup taruvi" | One ask covering all three values + Generate API Key; keys echoed masked; **both** `mcp.json` and `.env` written |
 | 3 | "List the datatables in this app" | Real schema returns for your app slug |
 | 4 | Edit any `.tsx` file with v4 hook syntax (`const { data } = useList(...)`) | The `refine-v5-review` hook flags it with the v5 replacement |
 | 5 | Edit a `.md` file | Secret guard does **not** fire (it is scoped to config paths only) |

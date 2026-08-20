@@ -2,7 +2,7 @@
 name: taruvi-setup
 description: >
   Interactive setup for the Taruvi Cursor plugin. Collects tenant, API key,
-  app slug, and optional Context7 key one at a time, then guides the user to
+  app slug, and optional Context7 key in a single ask, then guides the user to
   Plugins → Configure. Use when the user wants to connect Taruvi MCP, set up
   the plugin, or fix missing/invalid TARUVI_* config.
 ---
@@ -13,46 +13,56 @@ You help the user configure the **taruvi-plugin** MCP connection in Cursor.
 
 ## Hard rules
 
-1. Ask **exactly one question per message**. Wait for the answer before the next.
+1. Collect **all three Taruvi values in one message**. Don't drip-feed one question per turn.
 2. Never write secrets into `mcp.json`, `plugin.json`, git-tracked files, or the chat transcript as a “completed config dump”.
 3. Never invent tenant names, API keys, or app slugs.
 4. Values go in **Cursor Settings → Plugins → taruvi-plugin → Configure** (plugin variables). Leave `mcp.json` placeholders as `${TARUVI_*}` / `${CONTEXT7_API_KEY}`.
 5. Do not start Taruvi MCP tool calls until the user confirms Configure is done (or they explicitly ask to verify anyway).
 
-## Where the user gets these values
+## The single ask
 
-Before Q1, tell them **tenant / site URL, API key, and app slug** are on the app **Connect** page in Taruvi Console:
+Tenant / site URL, API key, and app slug all live in **one copyable block** on the app **Connect**
+page, so ask for them together. Build the URL from the user's own org / site / app:
 
 `https://<console-host>/organizations/<org-slug>/sites/<site-slug>/apps/<app-slug>/settings?section=connect`
 
-Example:
+If you don’t know those slugs, give the pattern and tell them: Console → org → site → app →
+**Settings → Connect**. Don’t guess slugs to produce a clickable link.
 
-https://test-console.taruvi.cloud/organizations/eox-vantage/sites/test-prompts/apps/plugin-test/settings?section=connect
+Send one message, a short intro plus:
 
-If they don’t know that URL: Console → org → site → app → **Settings → Connect**.
+> Open your app’s **Connect** page in Taruvi Console:
+>
+> `https://<console-host>/organizations/<org-slug>/sites/<site-slug>/apps/<app-slug>/settings?section=connect`
+>
+> On that page:
+>
+> 1. Click **Generate API Key** — the banner reads “Generate an API key to unlock MCP Server, REST
+>    API, and SDK connections.” Without it the key renders as `<your-api-key>` and nothing will
+>    authenticate.
+> 2. On the **Environment** tab, copy the whole block (copy icon, top-right):
+>
+>    ```bash
+>    TARUVI_SITE_URL=https://<tenant>.taruvi.cloud
+>    TARUVI_APP_SLUG=<app-slug>
+>    TARUVI_API_KEY=<generated-key>
+>    ```
+>
+> 3. Paste all three lines back here. I’ll tell you which Configure fields to fill — I won’t save
+>    them into the repo.
+>
+> Optional: paste a **Context7** API key for docs MCP, or say `skip`. (Not from Taruvi Connect.)
 
-## Interview script
+Map the paste to plugin variables:
 
-Start with a one-line intro, mention the Connect page (with the example pattern), then ask Q1.
+| Pasted | Variable |
+|---|---|
+| `TARUVI_SITE_URL` | `TARUVI_TENANT` — strip `https://` and `.taruvi.cloud` |
+| `TARUVI_APP_SLUG` | `TARUVI_APP_SLUG` |
+| `TARUVI_API_KEY` | `TARUVI_API_KEY` |
 
-### Q1 — Tenant
-
-> What is your Taruvi **tenant subdomain**? (e.g. `acme` for `https://acme.taruvi.cloud/mcp/` — subdomain only, not the full URL.)  
-> Copy site/tenant details from your app **Connect** page if needed.
-
-Validate: no `https://`, no spaces. If they paste a full URL, extract the subdomain and confirm.
-
-### Q2 — API key
-
-> Paste your Taruvi **API key** from the Connect page (Knox token used as `Authorization: Api-Key …`). I’ll only use it to tell you which Configure field to fill — I won’t save it into the repo.
-
-### Q3 — App slug
-
-> What is the **app slug** for `X-App-Slug`? (from Connect, e.g. `plugin-test` / `sample-app`)
-
-### Q4 — Context7 (optional)
-
-> Do you want to configure a **Context7** API key for docs MCP? Reply with the key, or `skip`. (Not from Taruvi Connect.)
+Re-ask only when needed: key still literal `<your-api-key>` (they skipped **Generate API Key**), or
+fewer than three values pasted — then ask for the missing ones by name, in one message.
 
 ## After answers
 

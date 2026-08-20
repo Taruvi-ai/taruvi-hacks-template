@@ -13,25 +13,48 @@ You are running the interactive Taruvi MCP setup for Cursor.
 
 ## Hard rules
 
-1. Ask **exactly one question per message**. Wait for the answer before continuing.
+1. Collect **all three Taruvi values in one message**. Don't drip-feed one question per turn.
 2. Do **not** write API keys into `mcp.json`, `plugin.json`, or any git-tracked file.
 3. Values belong in **Cursor Settings → Plugins → taruvi-plugin → Configure**.
 4. `mcp.json` already uses `${TARUVI_TENANT}`, `${TARUVI_API_KEY}`, `${TARUVI_APP_SLUG}`, `${CONTEXT7_API_KEY}` — leave it alone.
 
-## Where values come from
+## Ask once
 
-Tell the user first: tenant / API key / app slug are on the app **Connect** page:
+All three values sit in one copyable block on the app's **Connect** page. Build the URL from the
+user's own org / site / app:
 
-`https://<console-host>/organizations/<org>/sites/<site>/apps/<app>/settings?section=connect`
+`https://<console-host>/organizations/<org-slug>/sites/<site-slug>/apps/<app-slug>/settings?section=connect`
 
-Example: https://test-console.taruvi.cloud/organizations/eox-vantage/sites/test-prompts/apps/plugin-test/settings?section=connect
+If you don't know those slugs, give the pattern and tell them: Console → org → site → app →
+**Settings → Connect**. Don't guess slugs to produce a clickable link.
 
-## Interview (one at a time)
+Message to send:
 
-1. **Tenant subdomain** — e.g. `acme` (not a full URL); from Connect.
-2. **Taruvi API key** — Knox `Api-Key` token from Connect.
-3. **App slug** — `X-App-Slug` from Connect.
-4. **Context7 API key** — optional; allow `skip` (not from Taruvi Connect).
+> Open your app's **Connect** page in Taruvi Console:
+>
+> `https://<console-host>/organizations/<org-slug>/sites/<site-slug>/apps/<app-slug>/settings?section=connect`
+>
+> On that page:
+>
+> 1. Click **Generate API Key** — without it the key renders as `<your-api-key>` and nothing will
+>    authenticate.
+> 2. On the **Environment** tab, copy the whole block:
+>
+>    ```bash
+>    TARUVI_SITE_URL=https://<tenant>.taruvi.cloud
+>    TARUVI_APP_SLUG=<app-slug>
+>    TARUVI_API_KEY=<generated-key>
+>    ```
+>
+> 3. Paste all three lines back here.
+>
+> Optional: paste a **Context7** API key for library docs, or say `skip`. (Not from Taruvi Connect.)
+
+Map the paste: `TARUVI_SITE_URL` → `TARUVI_TENANT` (strip `https://` and `.taruvi.cloud`),
+`TARUVI_APP_SLUG` → `TARUVI_APP_SLUG`, `TARUVI_API_KEY` → `TARUVI_API_KEY`.
+
+If `TARUVI_API_KEY` still reads `<your-api-key>`, they skipped **Generate API Key** — ask them to
+generate one and re-paste.
 
 ## After answers
 
