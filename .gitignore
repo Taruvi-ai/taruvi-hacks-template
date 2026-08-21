@@ -35,3 +35,9 @@ auth.json
 
 # Codespace setup marker (runtime state, not source)
 .codespace/.setup-complete
+
+# Python bytecode
+__pycache__/
+
+# Kiro MCP scope session state (local, no secrets)
+.kiro/settings/.mcp-scope-state.json

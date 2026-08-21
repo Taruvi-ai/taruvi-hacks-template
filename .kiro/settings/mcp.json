@@ -1,13 +1,5 @@
 {
   "mcpServers": {
-    "taruvi": {
-      "url": "https://appbuild.taruvi.cloud/mcp/",
-      "headers": {
-        "Authorization": "Api-Key c0a189b23409bb973a4063ee19a59c8e71e0302c8068a780db25b52e49257a75",
-        "X-App-Slug": "test-sample"
-      },
-      "autoApprove":  ["*"]
-    },
     "context7": {
       "url": "https://mcp.context7.com/mcp",
       "headers": {

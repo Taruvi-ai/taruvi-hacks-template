@@ -4,6 +4,12 @@
   1. MCP config  -> connects the agent to the platform
   2. app .env    -> connects the running app to the platform
 
+Scope detection lives in mcp_scope.py and is reused here, so both entry points
+agree on which Taruvi server this workspace actually talks to. A freshly cloned
+template with no usable workspace config silently inherits whatever server the
+user-level config declares — usually another tenant/app. That is reported as an
+ambiguity to resolve with the user, not silently accepted.
+
 Exits 0 when both are usable, 1 when something needs fixing.
 Never prints a secret value; keys are masked to their last 4 characters.
 
@@ -19,12 +25,17 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import mcp_scope  # noqa: E402  (local module, path set above)
+
 ROOT = Path(__file__).resolve().parent.parent
 REQUIRED_ENV_KEYS = ("TARUVI_SITE_URL", "TARUVI_APP_SLUG", "TARUVI_API_KEY")
 
 problems: list[str] = []
 warnings: list[str] = []
 notes: list[str] = []
+# Things the agent must resolve *with the user* rather than guess at.
+ambiguities: list[str] = []
 
 
 def mask(value: str) -> str:
@@ -154,74 +165,71 @@ else:
 
 # ------------------------------------------------------------ output 2: MCP config
 
-mcp_candidates = [
-    (ROOT / ".kiro" / "settings" / "mcp.json", "workspace"),
-    (Path.home() / ".kiro" / "settings" / "mcp.json", "user"),
-]
-
 taruvi_server: dict | None = None
+taruvi_name = "taruvi"
 taruvi_source: Path | None = None
-found_any_config = False
 
-# Kiro merges user < workspace, so the workspace entry wins.
-for path, scope in mcp_candidates:
-    if not path.exists():
-        continue
-    found_any_config = True
-    config = load_json(path)
-    if not config:
-        continue
-    server = (config.get("mcpServers") or {}).get("taruvi")
-    if server is not None and taruvi_server is None:
-        taruvi_server, taruvi_source = server, path
-    notes.append(f"MCP config found ({scope}): {path}")
+# Scope discovery is shared with mcp_scope.py so both agree on which server wins.
+discovered_servers, scope_errors = mcp_scope.collect()
+problems.extend(f"MCP config could not be read — {err}" for err in scope_errors)
+
+for path in {Path(s["path"]) for s in discovered_servers}:
+    notes.append(f"MCP config found: {path}")
     if path.is_relative_to(ROOT):
         check_file_hygiene(path, "MCP config")
 
-if not found_any_config:
-    problems.append(
-        "No MCP config found at .kiro/settings/mcp.json or ~/.kiro/settings/mcp.json. "
-        'Run the kiro-setup skill ("setup taruvi").'
-    )
-elif taruvi_server is None:
-    problems.append(
-        "MCP config exists but declares no `taruvi` server under mcpServers, so no Taruvi "
-        "tools are available."
-    )
+scope_code, scope_verdict, scope_decision = mcp_scope.assess(discovered_servers)
+if scope_code == 2:
+    ambiguities.extend(scope_decision)
+
+# Validate the server Kiro will actually use: a usable workspace entry if there is
+# one, else whatever is inherited.
+usable = [s for s in discovered_servers if s["usable"]]
+chosen = next(
+    (s for s in usable if s["scope"] == "workspace"),
+    next(iter(usable), next(iter(discovered_servers), None)),
+)
+
+if chosen is None:
+    if not discovered_servers:
+        problems.append(
+            "No Taruvi MCP server found in .kiro/settings/mcp.json, .kiro/mcp.json, or "
+            '~/.kiro/settings/mcp.json. Run the kiro-setup skill ("setup taruvi").'
+        )
 else:
+    taruvi_server = chosen["_raw"]
+    taruvi_name = chosen["name"]
+    taruvi_source = Path(chosen["path"])
+    label = f"MCP `{taruvi_name}` server"
+    inherited = not taruvi_source.is_relative_to(ROOT)
     raw_headers = taruvi_server.get("headers") or {}
     # Compare against expanded values so an approved ${VAR} is judged on its real value.
     headers = {k: expand_vars(str(v)) for k, v in raw_headers.items()}
     url = expand_vars(taruvi_server.get("url", ""))
 
     if not url:
-        problems.append("MCP `taruvi` server has no `url`.")
+        problems.append(f"{label} has no `url`.")
     elif not url.rstrip("/").endswith("/mcp"):
-        warnings.append(
-            f"MCP `taruvi` url is '{url}' — expected it to end in /mcp/."
-        )
+        warnings.append(f"{label} url is '{url}' — expected it to end in /mcp/.")
 
     auth = headers.get("Authorization", "")
     if not auth:
-        problems.append("MCP `taruvi` server is missing the `Authorization` header.")
+        problems.append(f"{label} is missing the `Authorization` header.")
     elif not auth.startswith("Api-Key "):
-        problems.append(
-            "MCP `taruvi` Authorization header must be formatted `Api-Key <key>`."
-        )
+        problems.append(f"{label} Authorization header must be formatted `Api-Key <key>`.")
     elif is_placeholder(auth.removeprefix("Api-Key ")):
         problems.append(
-            "MCP `taruvi` API key is still a placeholder — click Generate API Key on the "
+            f"{label} API key is still a placeholder — click Generate API Key on the "
             "app's Connect page."
         )
 
     if not headers.get("X-App-Slug"):
         problems.append(
-            "MCP `taruvi` server is missing the `X-App-Slug` header; requests will have no "
-            "app context."
+            f"{label} is missing the `X-App-Slug` header; requests will have no app context."
         )
 
     if taruvi_server.get("disabled") is True:
-        problems.append("MCP `taruvi` server is present but `disabled: true`.")
+        problems.append(f"{label} is present but `disabled: true`.")
 
     # Kiro only expands ${VAR} for variables on the approved allowlist.
     for var in sorted(set(re.findall(r"\$\{(\w+)\}", json.dumps(taruvi_server)))):
@@ -234,6 +242,16 @@ else:
                 f"Kiro from that shell."
             )
 
+    # An inherited server disagreeing with .env is the clearest signal that the
+    # fallback is pointing at the wrong app, so say so instead of blaming .env.
+    inherited_hint = (
+        f" This server comes from the user-level config ({taruvi_source}), not this "
+        "workspace — it is almost certainly another project's connection. Confirm with the "
+        "user, then write a workspace config at .kiro/settings/mcp.json for this app."
+        if inherited
+        else ""
+    )
+
     # The two configs must point at the same tenant and app.
     env_site = env_values.get("TARUVI_SITE_URL", "")
     if env_site and url and not is_placeholder(env_site) and "${" not in url:
@@ -241,8 +259,9 @@ else:
         mcp_host = tenant_from_site_url(url)
         if env_host and mcp_host and env_host != mcp_host:
             problems.append(
-                f"Tenant mismatch: .env points at {env_host}, MCP config at {mcp_host}. "
+                f"Tenant mismatch: .env points at {env_host}, {label} at {mcp_host}. "
                 f"Both must be the same tenant (.env uses the full URL, MCP the same host)."
+                + inherited_hint
             )
 
     env_slug = env_values.get("TARUVI_APP_SLUG", "")
@@ -255,7 +274,8 @@ else:
         and env_slug != mcp_slug
     ):
         problems.append(
-            f"App slug mismatch: .env has '{env_slug}', MCP X-App-Slug has '{mcp_slug}'."
+            f"App slug mismatch: .env has '{env_slug}', {label} X-App-Slug has '{mcp_slug}'."
+            + inherited_hint
         )
 
     env_key = env_values.get("TARUVI_API_KEY", "")
@@ -275,6 +295,17 @@ else:
 
 # ------------------------------------------------------------------------ report
 
+
+def print_ambiguities() -> None:
+    if not ambiguities:
+        return
+    print("\nMCP scope needs confirmation (ask the user, do not pick silently):")
+    for index, item in enumerate(ambiguities):
+        # Only the first line carries the marker; the rest is its detail.
+        print(f"  [?] {item}" if index == 0 else f"      {item}")
+    print("\n  Full picture: python3 scripts/mcp_scope.py")
+
+
 if problems:
     print("Taruvi setup is incomplete.\n")
     for item in problems:
@@ -283,9 +314,23 @@ if problems:
         print()
         for item in warnings:
             print(f"  [!] {item}")
+    print_ambiguities()
     print(
         '\nFix with the kiro-setup skill ("setup taruvi"). After editing .env, restart the dev '
         "server — Vite bakes these in at build time."
+    )
+    sys.exit(1)
+
+if ambiguities:
+    # Credentials work, but it is unclear which app they belong to. Treat that as
+    # blocking: acting on the wrong tenant is worse than pausing to ask.
+    print("Taruvi credentials resolve, but the MCP connection is ambiguous.\n")
+    for item in warnings:
+        print(f"  [!] {item}")
+    print_ambiguities()
+    print(
+        "\nPresent the options to the user and let them choose: reuse the inherited server, "
+        'or run the kiro-setup skill ("setup taruvi") to create a workspace config.'
     )
     sys.exit(1)
 
@@ -297,7 +342,11 @@ if warnings:
 
 app_slug = env_values.get("TARUVI_APP_SLUG", "?")
 site_url = env_values.get("TARUVI_SITE_URL", "?")
-print(f"Taruvi setup OK — .env and MCP config both point at {app_slug} on {site_url}.")
+scope = "workspace" if taruvi_source and taruvi_source.is_relative_to(ROOT) else "user-level"
+print(
+    f"Taruvi setup OK — .env and the {scope} MCP `{taruvi_name}` server both point at "
+    f"{app_slug} on {site_url}."
+)
 if "-v" in sys.argv or "--verbose" in sys.argv:
     for item in notes:
         print(f"  - {item}")

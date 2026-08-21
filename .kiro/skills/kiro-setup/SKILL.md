@@ -25,6 +25,54 @@ Setup has **two outputs**. Both are required; finishing only the first is the mo
 4. Never write real secrets into git-tracked files. Confirm the target is gitignored first.
 5. Do not overwrite an existing config — merge into it and confirm before replacing values.
 
+## Step 0 — Look before you ask
+
+Don't ask for credentials the user has already provided somewhere. Run:
+
+```bash
+python3 scripts/mcp_scope.py
+```
+
+| Exit | Situation | Do this |
+|---|---|---|
+| 1 | nothing usable anywhere | Continue to Step 1 — this is the normal first-run path. |
+| 0 | one usable workspace server | Say which tenant/app it points at, and confirm they want to replace it before overwriting. |
+| 2 | usable servers exist, but not chosen for this workspace | **Ask first** — see below. |
+
+Exit 2 is the clone-and-connect case: Kiro merges MCP config `user < workspace`, so a template with
+no usable workspace config inherits a server from `~/.kiro/settings/mcp.json` and appears connected
+to *someone else's* app. Present the options rather than either silently reusing it or steamrolling
+it with a fresh setup:
+
+> I went through the MCP configs. This workspace has no Taruvi connection of its own, and your
+> user-level config (`~/.kiro/settings/mcp.json`) has:
+>
+> 1. `taruvi` → `other.taruvi.cloud`, app `someone-else`
+>
+> Two options:
+>
+> - **Reuse that connection** — I'll copy it into `.kiro/settings/mcp.json` so it's recorded for
+>   this workspace. Pick this only if this repo really is that app; every schema change and write
+>   goes to that tenant.
+> - **Set up this app's own connection** — I'll ask for the Connect page values and write a fresh
+>   workspace config.
+>
+> Which do you want?
+
+Wait for an answer, then:
+
+- **Reuse an inherited server** → copy that entry into `.kiro/settings/mcp.json` verbatim (same
+  hygiene rules as Path B below) and derive `.env` from its `url` + `X-App-Slug`. You still need the
+  key value for `.env`, so ask for it if the inherited config stores it as a `${VAR}`.
+- **Set up a new connection** → **go to Step 1 and send its message.** Do not write your own
+  credential questions.
+
+> **Do not improvise the credential ask.** Asking "what's your tenant subdomain, API key, and app
+> slug?" as three open questions is a regression, even though it names the right three values. It
+> makes the user hunt for them, and it skips **Generate API Key** — so they paste
+> `<your-api-key>`, nothing authenticates, and setup restarts. Step 1 exists because all three
+> values sit in one copyable block on the Connect page. Send that message instead.
+
 ## Step 1 — Ask for the connection details (single message)
 
 Send one message with the whole ask. All three values sit in one copyable block on the app's
@@ -185,14 +233,52 @@ If the repo ships an interactive `setup-env.js` (`npm run setup`), that script w
 `.mcp.json` together and is a fine alternative to editing by hand. Don't run both paths and end
 up with conflicting values.
 
-## Step 4 — Connect and verify
+## Step 4 — Reconnect, then verify (writing the config is not connecting)
 
-1. Reconnect from the **MCP Server** view in the Kiro feature panel. Kiro reconnects on config
-   change; no restart needed. (A restart *is* needed if you just exported new shell variables.)
-2. Approve the `taruvi` (and optional `context7`) servers when prompted. Frequently used
-   read-only tools can go in `autoApprove`.
-3. Verify MCP: "List the datatables in this app."
-4. Verify the app: restart the dev server and confirm it boots without an env error.
+**Kiro binds MCP servers when the session starts.** A config written mid-session is inert until the
+servers are reconnected — tools keep answering from the server bound earlier, which on a fresh
+clone is an inherited user-level one. The symptom is nasty because nothing looks broken: the config
+on disk is correct, and tools return real data *from the wrong app*.
+
+So a config write is never the last step.
+
+1. Check the files agree, before touching the connection:
+
+   ```bash
+   python3 scripts/check-taruvi-setup.py   # .env + MCP config agree, nothing leaked to git
+   python3 scripts/mcp_scope.py            # expect exit 0 naming the app you just configured
+   ```
+
+   Exit 2 means the workspace entry still isn't usable and Kiro would fall back to inherited config
+   — recheck the key and `X-App-Slug`. Exit 0 with an `Unverified:` line is expected here: the
+   config is right, it just hasn't been checked against live tools yet.
+
+2. **Reconnect.** Tell the user to do one of these, and say why:
+
+   - **Reconnect the `taruvi` server** from the **MCP Server** view in the Kiro feature panel —
+     fastest, keeps the session.
+   - **Restart the Kiro session** — needed if you just exported shell variables, since Kiro reads
+     the environment at launch.
+
+   You cannot do this yourself. `kiro-cli mcp` only manages config (`add`/`remove`/`list`/`import`/
+   `status`) — it has no reconnect. `kiro-cli restart` restarts the whole desktop app and would kill
+   the in-flight session, so don't call it on the user's behalf. Ask, then wait.
+
+3. Approve the `taruvi` (and optional `context7`) servers when prompted. Frequently used read-only
+   tools can go in `autoApprove`.
+
+4. **Verify against live tools, then record it.** Ask for the app's datatables and confirm the
+   result matches the app you just configured — not another tenant. Table names from a different
+   project are the tell.
+
+   ```bash
+   python3 scripts/mcp_scope.py --record   # only after tools returned the right app's data
+   ```
+
+   Recording without checking recreates the exact false green this step exists to catch. After
+   recording, `python3 scripts/mcp_scope.py` exits 0 and stops warning.
+
+5. Verify the app: restart the dev server and confirm it boots without an env error.
 
 | Symptom | Likely cause |
 |---|---|
@@ -200,6 +286,7 @@ up with conflicting values.
 | Auth / 401 | API key or tenant |
 | URL contains a literal `${TARUVI_TENANT}` | Variable not approved, or not exported |
 | Server not listed | Wrong config path, or needs reconnect |
+| Tools work but return **another app's** tables | Inherited user-level server — run `python3 scripts/mcp_scope.py` |
 | `context7` won't start | `npx` unavailable, or bad Context7 key |
 | App: "Missing required environment variable" | `.env` absent or incomplete |
 | App still failing after `.env` fix | Dev server not restarted |
