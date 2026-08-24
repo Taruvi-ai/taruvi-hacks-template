@@ -36,3 +36,9 @@ auth.json
 
 # Codespace setup marker (runtime state, not source)
 .codespace/.setup-complete
+
+# Taruvi agent plugin output (installed per app)
+.agents/
+.codex/
+.cursor/
+.kiro/
