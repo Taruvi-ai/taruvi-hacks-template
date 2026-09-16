@@ -99,9 +99,27 @@ fetch_secret() {
 PROVIDER_KEY=""
 PROVIDER_VAR=""
 
-# Read from .env first (pre-populated by codespace-first-run.sh)
+# Repair a .env corrupted by an earlier setup run that appended a multi-line
+# auth.json blob after OPENAI_API_KEY=. Keep only blank lines, comments, and
+# single-line KEY=value entries whose value is not a JSON fragment.
+if [ -f .env ]; then
+  awk '/^[[:space:]]*$/ || /^[[:space:]]*#/ || /^[A-Za-z_][A-Za-z0-9_]*=[^{]*$/' .env > .env.clean \
+    && mv .env.clean .env
+fi
+# Same repair for ~/.bashrc, where a corrupted run may have left "export OPENAI_API_KEY={".
+if [ -f ~/.bashrc ] && grep -qE '^export (OPENAI_API_KEY|ANTHROPIC_API_KEY)=[{[]' ~/.bashrc; then
+  sed -i.bak -E '/^export (OPENAI_API_KEY|ANTHROPIC_API_KEY)=[{[]/d' ~/.bashrc && rm -f ~/.bashrc.bak
+fi
+
+# Read from .env first — only accept a plain single-line key, never a JSON
+# fragment (ChatGPT-OAuth providers are stored as an auth.json object and are
+# handled by the fetch path below / write-codex-auth.sh).
 for _var in OPENAI_API_KEY ANTHROPIC_API_KEY; do
-  _val=$(grep -E "^${_var}=.+" .env 2>/dev/null | cut -d= -f2- | tr -d '[:space:]')
+  # "|| true": under set -e/pipefail a missing key must not abort setup.
+  _val=$(grep -E "^${_var}=.+" .env 2>/dev/null | head -n 1 | cut -d= -f2- | tr -d '[:space:]' || true)
+  case "$_val" in
+    "{"*|"["*) _val="" ;;
+  esac
   if [ -n "$_val" ]; then
     PROVIDER_KEY="$_val"
     PROVIDER_VAR="$_var"

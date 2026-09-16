@@ -60,14 +60,11 @@ if [ -n "${_PRE_SITE//[[:space:]]/}" ] \
   _write_env_var "TARUVI_SITE_URL" "${_PRE_SITE%/}"
   _write_env_var "TARUVI_APP_SLUG" "$_PRE_SLUG"
   _write_env_var "TARUVI_API_KEY"  "$_PRE_KEY"
-  # Write AI provider key (OPENAI_API_KEY or ANTHROPIC_API_KEY) if present
-  for _prov_var in OPENAI_API_KEY ANTHROPIC_API_KEY; do
-    _prov_val=$(echo "$_body" | jq -r ".data.config.${_prov_var} // empty" 2>/dev/null)
-    if [ -n "${_prov_val//[[:space:]]/}" ]; then
-      _write_env_var "$_prov_var" "$_prov_val"
-    fi
-  done
-  unset _prov_var _prov_val
+  # NOTE: the AI provider key is intentionally NOT written to .env here.
+  # For ChatGPT-OAuth providers the value is a multi-line auth.json blob, which
+  # corrupts .env and makes start-codex-devcontainer.sh read back "{" as the
+  # key. write-codex-auth.sh (postStartCommand) and start-codex-devcontainer.sh
+  # both handle the provider key correctly on their own.
   echo ""
   echo "  ✅  Found pre-configured Taruvi credentials."
 fi
