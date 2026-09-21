@@ -29,9 +29,12 @@ IMPORTANT: Always use Context7 MCP Skill when I need library/API, Refine v5, MUI
 
 ### Before Starting Any Task:
 
-1. **Create a Project Spec Document** - Run exploration, document resources/providers/auth flow, identify dependencies, map affected files
-2. **Read Relevant Files** - Always use Read tool before editing, check existing patterns
-3. **Plan with TodoWrite** - Break down complex tasks into steps, track progress
+This is a hackathon environment — speed to a working build matters more than upfront documentation. Default to building, not planning.
+
+1. **One-pass spec, if any — never a back-and-forth** - A short spec note (resources, key flows, assumptions) is fine, but write it once and move straight to building. Do not keep revising, re-reviewing, or expanding it, and do not run multiple rounds of clarifying questions. If something is unclear, ask **once**, in a single batch, only when genuinely blocked (missing credentials, a destructive/irreversible action, or ambiguous scope with no reasonable default) — otherwise make a reasonable assumption, state it in one line, and start building.
+2. **Read Relevant Files** - Use Read tool before editing the files you're about to touch, but keep this targeted — not a full codebase survey.
+3. **Ship an initial working version first** - Get a functional first pass (schema + seed data + core pages wired to live data) built quickly, then iterate in follow-up turns based on feedback rather than trying to nail every detail up front.
+4. **Plan with TodoWrite** - For multi-step work, track progress with TodoWrite instead of continuing to elaborate the spec note.
 
 ### Notification Rule
 
@@ -327,7 +330,7 @@ npm run refine       # Run Refine CLI
 3. **Follow existing patterns** - Check similar components
 4. **Use TodoWrite for complex tasks** - Track progress
 5. **Explore when confused** - Use Task tool with Explore agent
-6. **Create spec doc before starting** - Understand context
+6. **Spec once, then build** - A brief spec note is fine, but don't loop on revising it or on multiple rounds of questions; ship a working first pass, then refine from feedback
 7. **Test incrementally** - Don't make many changes at once
 8. **Validate schemas** - Use MCP tools to check table structure
 9. **Keep it simple** - Don't over-engineer
