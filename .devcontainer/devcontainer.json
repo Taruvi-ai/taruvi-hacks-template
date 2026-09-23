@@ -25,8 +25,7 @@
     },
     "5173": {
       "label": "Taruvi Buildathon App",
-      "onAutoForward": "openBrowser",
-      "visibility": "public"
+      "onAutoForward": "openBrowser"
     }
   },
   "customizations": {
