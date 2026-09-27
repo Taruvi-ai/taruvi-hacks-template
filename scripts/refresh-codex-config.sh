@@ -19,7 +19,7 @@ export CODEX_HOME="${CODEX_HOME:-$PWD/.codex}"
 mkdir -p "$CODEX_HOME/projects"
 
 cat > "$CODEX_HOME/config.toml" <<EOF
-model = "gpt-5.5"
+model = "gpt-6-sol"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
 
