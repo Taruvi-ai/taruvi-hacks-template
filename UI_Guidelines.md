@@ -25,7 +25,7 @@ You do **not** need to set these manually anywhere — they apply across every c
 | Buttons | Quicksand 700 UPPERCASE, 4px radius, sm/md/lg = 6·14 / 10·20 / 14·28 px, min-h 28/36/44, **44px on `(pointer: coarse)` for mobile WCAG** | `MuiButton` |
 | Chips | Pill (999), Quicksand 700 UPPERCASE 0.06em, h 24 / sm 20 | `MuiChip` |
 | **Tag chips (rotation)** | 4 pastel `variant="tagBlue"/"tagPurple"/"tagGreen"/"tagOrange"` — no `sx` needed | `MuiChip` variants |
-| Cards | 10px radius, 28px padding, `0 2px 12px rgba(0,0,0,0.07)` shadow | `MuiCard` / `MuiCardContent` |
+| Cards | 10px radius, 28px padding, `0 2px 12px rgba(0,0,0,0.07)` shadow | `MuiCard` / `MuiCardContent` — the padding is on `CardContent`, so put card content inside it; full-bleed tables/media go directly in `<Card>` |
 | Card title | Quicksand 600 12px UPPERCASE 0.05em, 16px margin-bottom | `MuiCardHeader.title` |
 | Inputs | 6px radius, `#F3F3F5` fill, **12×16 padding, 16px font**, 2px focus ring, opacity-0.5 disabled, muted read-only | `MuiOutlinedInput` |
 | Form label | Open Sans 600 13px, asterisk in error | `MuiInputLabel` / `MuiFormLabel` |
@@ -504,8 +504,10 @@ A stat tile is a plain themed `<Card>`: number is the hero, label above it, left
 
 ```tsx
 <Card>
-  <Typography variant="body2" color="text.secondary">Open RCAs</Typography>
-  <Typography variant="h3" sx={{ fontFamily: 'Quicksand', fontWeight: 700 }}>{openRcas}</Typography>
+  <CardContent>
+    <Typography variant="body2" color="text.secondary">Open RCAs</Typography>
+    <Typography variant="h3" sx={{ fontFamily: 'Quicksand', fontWeight: 700 }}>{openRcas}</Typography>
+  </CardContent>
 </Card>
 ```
 

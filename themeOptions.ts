@@ -591,7 +591,12 @@ const componentOverrides = (mode: 'light' | 'dark'): ThemeOptions['components'] 
     },
     MuiCardHeader: {
       styleOverrides: {
-        root: { padding: 0, marginBottom: taruviTokens.spacing.cardTitleMb },
+        // Card root has no padding, so the header carries the 28px inset itself
+        // and pulls the following CardContent up to the 16px title gap.
+        root: {
+          padding: `${taruviTokens.spacing.cardPadding}px ${taruviTokens.spacing.cardPadding}px 0`,
+          '& + .MuiCardContent-root': { paddingTop: taruviTokens.spacing.cardTitleMb },
+        },
         title: {
           fontFamily: FONT_TITLE,
           fontSize: taruviTokens.fontSize.cardTitle,    // 12px
@@ -604,8 +609,8 @@ const componentOverrides = (mode: 'light' | 'dark'): ThemeOptions['components'] 
     },
     MuiCardContent: {
       styleOverrides: {
-        // Card inset now lives here (moved off MuiCard.root) so a full-bleed
-        // table can opt out with `sx={{ p: 0, '&:last-child': { pb: 0 } }}`.
+        // Card inset lives here, not on MuiCard.root. A full-bleed child
+        // (DataGrid, CardMedia) goes directly in <Card>, outside CardContent.
         root: {
           padding: taruviTokens.spacing.cardPadding,    // 28px
           '&:last-child': { paddingBottom: taruviTokens.spacing.cardPadding },
