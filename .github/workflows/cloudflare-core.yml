@@ -207,6 +207,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy "${{ steps.path.outputs.project_path }}/${{ inputs.build_directory }}" --project-name="${{ inputs.cloudflare_project_name || inputs.project_name }}"
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          wranglerVersion: '3'
 
       - name: Deploy to Cloudflare Workers
         if: inputs.project_type == 'workers'

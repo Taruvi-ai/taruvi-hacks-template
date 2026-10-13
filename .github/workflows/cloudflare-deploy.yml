@@ -356,6 +356,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy ".cloudflare/projects/${{ matrix.project }}/build" --project-name="${{ matrix.project }}"
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          wranglerVersion: '3'
 
   deploy-manual:
     needs: prepare
