@@ -72,6 +72,10 @@ npm run start
 
 Add items to the profile avatar dropdown (e.g. "Report an issue", help links) by editing `src/navkit/useNavkitProfileMenuItems.tsx`. Full instructions: [docs/GETTING_STARTED.md — Custom profile menu items](docs/GETTING_STARTED.md#custom-profile-menu-items).
 
+## UTM Tracking
+
+https://taruvibase.com/?utm_source=github&utm_medium=readme&utm_campaign=taruvi-hacks-template
+
 ## Learn More
 
 - [Refine Docs](https://refine.dev/docs)
