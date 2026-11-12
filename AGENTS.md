@@ -391,3 +391,35 @@ Prompts for site name, then builds, zips `dist/`, and uploads to Taruvi frontend
 - `refine build` does NOT work inside the Docker container (symlinked node_modules)
 - Use `vite build --configLoader runner` directly (already configured in `npm run build`)
 - Set `XDG_CONFIG_HOME=/tmp` if running refine CLI commands
+
+## Cursor Cloud specific instructions
+
+### Environment Overview
+
+This is a **frontend-only** Refine v5 + React + TypeScript SPA. All backend services (database, auth, storage, functions) are provided by a remote Taruvi cloud tenant — no local database or backend process is needed.
+
+### Required Environment Variables
+
+The app requires three env vars in `.env.local` (loaded by Vite at dev-server start):
+- `TARUVI_SITE_URL` — the Taruvi tenant URL (e.g. `https://mysite.taruvi.cloud`)
+- `TARUVI_APP_SLUG` — the app identifier
+- `TARUVI_API_KEY` — API key for the tenant
+
+Without valid credentials the app will redirect to auth and fail (expected). With valid credentials it works fully.
+
+### Key Commands
+
+| Action | Command |
+|--------|---------|
+| Install deps | `npm install --legacy-peer-deps` |
+| Dev server | `npx vite --host 0.0.0.0 --port 5173` |
+| Build | `npx vite build --configLoader runner` |
+| Lint | `npx eslint src/` |
+| Type check | `npx tsc --noEmit` |
+
+### Gotchas
+
+- **No lockfile exists** — the repo has no `package-lock.json`. Always use `--legacy-peer-deps` to avoid peer dependency conflicts (React 19 + older MUI peer ranges).
+- **`npm run dev` calls `refine dev`** which wraps Vite. In Cursor Cloud, prefer calling `npx vite` directly to avoid the Refine CLI overhead.
+- **Auth is redirect-based** — the app will redirect to the Taruvi tenant login page. The app cannot be fully tested without valid TARUVI credentials.
+- **Pre-existing lint errors** — the codebase has 6 ESLint errors (unused vars, empty interface). These are in existing code and should not block work.
